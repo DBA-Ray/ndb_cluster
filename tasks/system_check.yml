@@ -32,13 +32,13 @@
 - name: Stop ndb_mgm
   shell: " ndb_mgm -e shutdown"
   when: whether_uninstall and (ansible_hostname == "ansible")
-    
+
 - name: Uninstall mysql
   yum:
     name: mysql*
     state: absent
   when: whether_uninstall
-  
+
 - name: Remove existing mysql directory
   file:
     path: "{{ basedir }}"

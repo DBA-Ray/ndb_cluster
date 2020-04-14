@@ -21,7 +21,7 @@
     - "{{ etcdir }}"
     - "{{ logdir }}"
   when: ansible_hostname != "ansible"
-  
+
 - name: Install the ndb cluster repo
   yum:
     name: "{{ remote_repo }}"
@@ -34,13 +34,13 @@
   yum:
     name: ["{{ cluster_server_name }}", "{{ cluster_lib_compat_name }}", "{{ date_node_name }}", "{{ ndb_client_name }}", "{{ management_server_name }}", "{{ cluster_embedded_name }}", "{{ cluster_memcached_name }}"] 
     state: present
-    
-- name: Install the auto installer 
+
+- name: Install the auto installer
   yum:
     name: "mysql-cluster-community-auto-installer-{{ ndb_version }}"
     state: present
   when: ansible_hostname == "ansible"
-    
+
 - name: Install the required software on set-up host
   pip:
     name: [cryptography, paramiko]
@@ -51,7 +51,7 @@
     path: /root/.mcc/mcc.pid
     state: absent
   when: whether_uninstall and (ansible_hostname == "ansible")
-  
+
 - name: Start the web server for auto installer
   shell: "echo '/usr/bin/ndb_setup.py -p {{ web_port }} -N 0.0.0.0' > /root/.mcc/ndb_auto.txt"
   when: ansible_hostname == "ansible"
