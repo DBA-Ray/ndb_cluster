@@ -1,0 +1,6 @@
+---
+- hosts: "{{ deploy_hosts }}"
+  gather_facts: True
+  remote_user: root
+  roles:
+    - dba_ray.ndb_cluster

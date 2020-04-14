@@ -1,0 +1,7 @@
+---
+# tasks file for dba_ray.ndb_cluster
+- include: password.yml
+
+- include: system_check.yml
+
+- include: initial_start.yml

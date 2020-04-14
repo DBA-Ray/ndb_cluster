@@ -1,0 +1,18 @@
+---
+# vars file for dba_ray.ndb_cluster
+
+packages:
+  - vim
+  - lrzsz
+  - telnet
+  - net-tools
+  - tree
+  - unzip
+  - libaio
+  - numactl
+  - perl-DBD-mysql
+  - expect
+  - MySQL-python
+  
+vars_files:
+  - secrets.yml
