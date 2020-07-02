@@ -1,12 +1,12 @@
 ---
 # defaults file for dba_ray.ndb_cluster
 # Whether to uninstall the original service and then install it
-whether_uninstall: False
+whether_uninstall: True
 # Which hosts to deploy
-deploy_hosts: proxysql_pro1:proxysql_pro2:ansible
+deploy_hosts: ndb:ansible
 # Ndb cluster version and basic rpm name
 remote_repo: https://dev.mysql.com/get/mysql80-community-release-el7-3.noarch.rpm
-ndb_version: 8.0.19-1.el7.x86_64
+ndb_version: 8.0.20-1.el7.x86_64
 cluster_lib_compat_name: "mysql-cluster-community-libs-compat-{{ ndb_version }}"
 cluster_server_name: "mysql-cluster-community-server-{{ ndb_version }}"
 date_node_name: "mysql-cluster-community-data-node-{{ ndb_version }}"
@@ -24,4 +24,4 @@ datadir: "{{ basedir }}/data"
 etcdir: "{{ basedir }}/etc"
 logdir: "{{ basedir }}/log"
 # Basic parameters
-web_port: 7070
+web_port: 8080
