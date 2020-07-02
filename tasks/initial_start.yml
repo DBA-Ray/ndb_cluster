@@ -34,6 +34,9 @@
   yum:
     name: ["{{ cluster_server_name }}", "{{ cluster_lib_compat_name }}", "{{ date_node_name }}", "{{ ndb_client_name }}", "{{ management_server_name }}", "{{ cluster_embedded_name }}", "{{ cluster_memcached_name }}"] 
     state: present
+  register: result
+  retries: 7
+  until: result is succeeded
 
 - name: Install the auto installer
   yum:
