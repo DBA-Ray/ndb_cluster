@@ -59,7 +59,37 @@
   shell: "echo '/usr/bin/ndb_setup.py -p {{ web_port }} -N 0.0.0.0' > /root/.mcc/ndb_auto.txt"
   when: ansible_hostname == "ansible"
 
-- name: Rendering deploy.js file and parameters.js file
+- name: Add mysql parameters for deploy.js
+  blockinfile:
+    path: /usr/share/mysql-8.0/mcc/frontend/js/mcc/configuration/deploy.js
+    marker: "        /* {mark} ANSIBLE MANAGED BLOCK */"
+    insertafter: "        configFile.name = 'my.cnf';"
+    block: |
+      /***DBA RAY***/
+              addln(configFile, 'default-storage-engine=ndbcluster');
+              addln(configFile, 'character_set_server=utf8mb4');
+              addln(configFile, 'collation_server=utf8mb4_0900_ai_ci');
+              addln(configFile, 'default_authentication_plugin=mysql_native_password');
+              addln(configFile, 'lower_case_table_names=1');
+              addln(configFile, 'long_query_time=0.1');
+              addln(configFile, 'slow_query_log=1');
+              addln(configFile, 'slow_query_log_file=/data/log/slow.log');
+              addln(configFile, 'max_connections=2000');
+              addln(configFile, 'max_connect_errors=200000');
+              addln(configFile, 'max_allowed_packet=1073741824');
+              addln(configFile, 'skip_external_locking');
+              addln(configFile, 'skip_name_resolve');
+              addln(configFile, 'wait_timeout=3600');
+              addln(configFile, 'interactive_timeout=3600');
+              addln(configFile, 'log_timestamps=system');
+              addln(configFile, 'binlog_transaction_dependency_tracking=WRITESET');
+              addln(configFile, 'transaction_write_set_extraction=XXHASH64');
+              addln(configFile, 'binlog_expire_logs_seconds=604800');
+              addln(configFile, 'binlog_format=row');
+              addln(configFile, 'ndb_cluster_connection_pool=8');
+  when: ansible_hostname == "ansible"
+
+- name: Rendering parameters.js file
   template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
@@ -67,6 +97,5 @@
     group: root
     mode: 0644
   with_items:
-    - { src: 'deploy.js.j2', dest: '/usr/share/mysql-8.0/mcc/frontend/js/mcc/configuration/deploy.js' }
     - { src: 'parameters.js.j2', dest: '/usr/share/mysql-8.0/mcc/frontend/js/mcc/configuration/parameters.js' }
   when: ansible_hostname == "ansible"
