@@ -15,13 +15,11 @@ management_server_name: "mysql-cluster-community-management-server-{{ ndb_versio
 cluster_embedded_name: "mysql-cluster-community-embedded-compat-{{ ndb_version }}"
 cluster_memcached_name: "mysql-cluster-community-memcached-{{ ndb_version }}"
 # Directory path
-install_dir: /data
+install_dir: /var/local
 package_dir: "{{ install_dir }}/package"
 basedir: "{{ install_dir }}/mysql"
 shelldir: "{{ install_dir }}/shell"
 monitordir: "{{ install_dir }}/monitor"
-datadir: "{{ basedir }}/data"
-etcdir: "{{ basedir }}/etc"
 logdir: "{{ basedir }}/log"
 # Basic parameters
 web_port: 8080

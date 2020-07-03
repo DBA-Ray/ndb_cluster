@@ -18,7 +18,6 @@
     - "{{ shelldir }}"
     - "{{ monitordir }}"
     - "{{ basedir }}"
-    - "{{ etcdir }}"
     - "{{ logdir }}"
   when: ansible_hostname != "ansible"
 
@@ -71,9 +70,10 @@
               addln(configFile, 'collation_server=utf8mb4_0900_ai_ci');
               addln(configFile, 'default_authentication_plugin=mysql_native_password');
               addln(configFile, 'lower_case_table_names=1');
-              addln(configFile, 'long_query_time=0.1');
+              addln(configFile, 'long_query_time=0.5');
               addln(configFile, 'slow_query_log=1');
-              addln(configFile, 'slow_query_log_file=/data/log/slow.log');
+              addln(configFile, 'slow_query_log_file="{{ logdir }}"/slow.log');
+              addln(configFile, 'log-error="{{ logdir }}"/mysqld.log');
               addln(configFile, 'max_connections=2000');
               addln(configFile, 'max_connect_errors=200000');
               addln(configFile, 'max_allowed_packet=1073741824');
