@@ -25,9 +25,9 @@
     state: stopped
   when: whether_uninstall
 
-#- name: Stop mysql server via mysqladmin
-#  shell: "mysqladmin -uroot -h127.0.0.1 shutdown"
-#  when: whether_uninstall
+- name: Stop mysql server via mysqladmin
+  shell: "mysqladmin -uroot -h127.0.0.1 shutdown"
+  when: whether_uninstall
 
 - name: Stop ndb_mgm
   shell: " ndb_mgm -e shutdown"

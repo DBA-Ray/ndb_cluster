@@ -59,13 +59,14 @@
   shell: "echo '/usr/bin/ndb_setup.py -p {{ web_port }} -N 0.0.0.0' > /root/.mcc/ndb_auto.txt"
   when: ansible_hostname == "ansible"
 
-#- name: Rendering deploy.js file and parameters.js file
-#  template:
-#    src: "{{ item.src }}"
-#    dest: "{{ item.dest }}"
-#    owner: root
-#    group: root
-#    mode: 0644
-#  with_items:
-#    - { src: 'deploy.js.j2', dest: '/usr/share/mysql-8.0/mcc/frontend/js/mcc/configuration/deploy.js' }
-#    - { src: 'parameters.js.j2', dest: '/usr/share/mysql-8.0/mcc/frontend/js/mcc/configuration/parameters.js' }
+- name: Rendering deploy.js file and parameters.js file
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: 0644
+  with_items:
+    - { src: 'deploy.js.j2', dest: '/usr/share/mysql-8.0/mcc/frontend/js/mcc/configuration/deploy.js' }
+    - { src: 'parameters.js.j2', dest: '/usr/share/mysql-8.0/mcc/frontend/js/mcc/configuration/parameters.js' }
+  when: ansible_hostname == "ansible"

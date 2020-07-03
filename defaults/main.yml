@@ -1,7 +1,7 @@
 ---
 # defaults file for dba_ray.ndb_cluster
 # Whether to uninstall the original service and then install it
-whether_uninstall: True
+whether_uninstall: False
 # Which hosts to deploy
 deploy_hosts: ndb:ansible
 # Ndb cluster version and basic rpm name
