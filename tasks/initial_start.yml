@@ -54,15 +54,14 @@
     state: absent
   when: whether_uninstall and (ansible_hostname == "ansible")
 
-- name: Start the web server for auto installer
-  shell: "echo '/usr/bin/ndb_setup.py -p {{ web_port }} -N 0.0.0.0' > /root/.mcc/ndb_auto.txt"
-  when: ansible_hostname == "ansible"
+- name: Add the flag of ray mysql parameters
+  shell: "sed -i '2190i\        /***THE FLAG OF RAY***/' /usr/share/mysql-8.0/mcc/frontend/js/mcc/configuration/deploy.js"
 
 - name: Add mysql parameters for deploy.js
   blockinfile:
     path: /usr/share/mysql-8.0/mcc/frontend/js/mcc/configuration/deploy.js
     marker: "        /* {mark} ANSIBLE MANAGED BLOCK */"
-    insertafter: "        configFile.name = 'my.cnf';"
+    insertafter: "        /***THE FLAG OF RAY***/"
     block: |
       /***DBA RAY***/
               addln(configFile, 'default-storage-engine=ndbcluster');
@@ -107,4 +106,8 @@
     mode: 0644
   with_items:
     - { src: 'parameters.js.j2', dest: '/usr/share/mysql-8.0/mcc/frontend/js/mcc/configuration/parameters.js' }
+  when: ansible_hostname == "ansible"
+
+- name: Start the web server for auto installer
+  shell: "echo '/usr/bin/ndb_setup.py -p {{ web_port }} -N 0.0.0.0' > /root/.mcc/ndb_auto.txt"
   when: ansible_hostname == "ansible"
