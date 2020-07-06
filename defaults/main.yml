@@ -17,7 +17,7 @@ cluster_memcached_name: "mysql-cluster-community-memcached-{{ ndb_version }}"
 # Directory path
 install_dir: /var/local
 package_dir: "{{ install_dir }}/package"
-basedir: "{{ install_dir }}/mysql"
+basedir: "{{ install_dir }}/mcc"
 shelldir: "{{ install_dir }}/shell"
 monitordir: "{{ install_dir }}/monitor"
 logdir: "{{ basedir }}/log"

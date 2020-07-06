@@ -73,7 +73,6 @@
               addln(configFile, 'long_query_time=0.5');
               addln(configFile, 'slow_query_log=1');
               addln(configFile, 'slow_query_log_file="{{ logdir }}"/slow.log');
-              addln(configFile, 'log-error="{{ logdir }}"/mysqld.log');
               addln(configFile, 'max_connections=2000');
               addln(configFile, 'max_connect_errors=200000');
               addln(configFile, 'max_allowed_packet=1073741824');
@@ -86,6 +85,16 @@
               addln(configFile, 'transaction_write_set_extraction=XXHASH64');
               addln(configFile, 'binlog_expire_logs_seconds=604800');
               addln(configFile, 'binlog_format=row');
+              addln(configFile, 'binlog_transaction_compression=ON');
+              addln(configFile, 'binlog_transaction_compression_level_zstd=12');
+              addln(configFile, 'binlog_cache_size=256K');
+              addln(configFile, 'binlog_stmt_cache_size=32k');
+              addln(configFile, 'sync_binlog=1');
+              addln(configFile, 'thread_cache_size=400');
+              addln(configFile, 'explicit_defaults_for_timestamp=1');
+              addln(configFile, 'table_open_cache=20000');
+              addln(configFile, 'table_definition_cache=20000');
+              addln(configFile, 'explicit_defaults_for_timestamp=1');
               addln(configFile, 'ndb_cluster_connection_pool=8');
   when: ansible_hostname == "ansible"
 
