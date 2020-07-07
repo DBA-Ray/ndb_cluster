@@ -50,7 +50,7 @@
     path: /root/.mcc/mcc.pid
     state: absent
   when: whether_uninstall and (inventory_hostname_short == "ansible")
-  
+
 - name: Backp orignal deploy.js and parameters.js
   copy:
     src: "{{ item }}"
@@ -63,7 +63,7 @@
   with_items:
     - /usr/share/mysql-8.0/mcc/frontend/js/mcc/configuration/deploy.js
     - /usr/share/mysql-8.0/mcc/frontend/js/mcc/configuration/parameters.js
-    
+
 - name: Add the flag of ray mysql parameters
   shell: "sed -i '2199i\ // THE FLAG OF RAY' /usr/share/mysql-8.0/mcc/frontend/js/mcc/configuration/deploy.js"
   when: inventory_hostname_short == "ansible"
