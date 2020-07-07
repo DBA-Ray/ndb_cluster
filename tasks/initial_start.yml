@@ -56,6 +56,7 @@
 
 - name: Add the flag of ray mysql parameters
   shell: "sed -i '2190i\        /***THE FLAG OF RAY***/' /usr/share/mysql-8.0/mcc/frontend/js/mcc/configuration/deploy.js"
+  when: ansible_hostname == "ansible"
 
 - name: Add mysql parameters for deploy.js
   blockinfile:

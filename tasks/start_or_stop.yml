@@ -1,0 +1,3 @@
+# Start mcc
+- name: Start server
+  shell: "ndb_mgmd --config-file={{ basedir }}/config.ini --initial --ndb-nodeid=1 --config-dir={{ basedir }}"
