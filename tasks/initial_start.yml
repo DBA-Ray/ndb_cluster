@@ -105,7 +105,6 @@
               addln(configFile, 'table_open_cache=20000');
               addln(configFile, 'table_definition_cache=20000');
               addln(configFile, 'explicit_defaults_for_timestamp=1');
-              addln(configFile, 'ndb_cluster_connection_pool=8');
   when: inventory_hostname_short == "ansible" and whether_modify_parameters
 
 - name: Rendering parameters.js file
