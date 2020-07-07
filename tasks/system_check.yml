@@ -39,7 +39,7 @@
     state: absent
   when: whether_uninstall
 
-- name: Remove existing mysqlcluster directory
+- name: Remove existing mcc directory
   file:
     path: "{{ basedir }}"
     state: absent

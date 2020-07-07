@@ -1,25 +1,24 @@
 #initial for ndb cluster auto installer
-- name: Ensure group "mysqlcluster" exists
+- name: Ensure group "mcc" exists
   group:
-    name: mysqlcluster
+    name: mcc
     state: present
 
-- name: Ensure the user "mysqlcluster" exists
+- name: Ensure the user "mcc" exists
   user:
-    name: mysqlcluster
-    group: mysqlcluster
-    password: "{{ mysqlcluster_password | password_hash('sha512') }}"
+    name: mcc
+    group: mcc
+    password: "{{ mcc_password | password_hash('sha512') }}"
     update_password: always
 
-- name: Create directories for mysqlcluster
-  file: path={{ item }} state=directory owner=mysqlcluster group=mysqlcluster
+- name: Create directories for mcc
+  file: path={{ item }} state=directory owner=mcc group=mcc
   with_items:
     - "{{ package_dir }}"
     - "{{ shelldir }}"
     - "{{ monitordir }}"
     - "{{ basedir }}"
     - "{{ logdir }}"
-  when: ansible_hostname != "ansible"
 
 - name: Install the ndb cluster repo
   yum:
@@ -55,14 +54,14 @@
   when: whether_uninstall and (ansible_hostname == "ansible")
 
 - name: Add the flag of ray mysql parameters
-  shell: "sed -i '2190i\        /***THE FLAG OF RAY***/' /usr/share/mysql-8.0/mcc/frontend/js/mcc/configuration/deploy.js"
+  shell: "sed -i '2199i\        // THE FLAG OF RAY' /usr/share/mysql-8.0/mcc/frontend/js/mcc/configuration/deploy.js"
   when: ansible_hostname == "ansible"
 
 - name: Add mysql parameters for deploy.js
   blockinfile:
     path: /usr/share/mysql-8.0/mcc/frontend/js/mcc/configuration/deploy.js
     marker: "        /* {mark} ANSIBLE MANAGED BLOCK */"
-    insertafter: "        /***THE FLAG OF RAY***/"
+    insertafter: "        // THE FLAG OF RAY"
     block: |
       /***DBA RAY***/
               addln(configFile, 'default-storage-engine=ndbcluster');
@@ -72,7 +71,7 @@
               addln(configFile, 'lower_case_table_names=1');
               addln(configFile, 'long_query_time=0.5');
               addln(configFile, 'slow_query_log=1');
-              addln(configFile, 'slow_query_log_file="{{ logdir }}"/slow.log');
+              addln(configFile, 'slow_query_log_file={{ logdir }}/slow.log');
               addln(configFile, 'max_connections=2000');
               addln(configFile, 'max_connect_errors=200000');
               addln(configFile, 'max_allowed_packet=1073741824');
