@@ -2,5 +2,7 @@
 - hosts: "{{ deploy_hosts }}"
   gather_facts: True
   remote_user: root
+  vars:
+    is_update: True # Whether to upgrade mysql cluster
   roles:
     - dba_ray.ndb_cluster

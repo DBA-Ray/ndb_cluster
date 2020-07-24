@@ -5,3 +5,6 @@
 - include: system_check.yml
 
 - include: initial_start.yml
+
+- include: upgrade.yml
+  when: is_update | default(False)

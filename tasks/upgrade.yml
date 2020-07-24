@@ -1,0 +1,7 @@
+- name: Upgrade the mysql-cluster*
+  yum:
+    name: mysql-cluster*
+    state: latest
+  register: result
+  retries: 7
+  until: result is succeeded
