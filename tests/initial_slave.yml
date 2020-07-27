@@ -1,0 +1,8 @@
+---
+- hosts: slave
+  gather_facts: True
+  remote_user: root
+  vars:
+    initial: True # Whether to upgrade mysql cluster
+  roles:
+    - dba_ray.ndb_cluster

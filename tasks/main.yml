@@ -8,3 +8,6 @@
 
 - include: upgrade.yml
   when: is_update | default(False)
+
+- include: initial_start_slave.yml
+  when: initial_slave | default(False)
