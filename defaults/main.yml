@@ -4,7 +4,7 @@
 whether_uninstall: False
 whether_modify_parameters: True
 # Which hosts to deploy
-deploy_hosts: ansible
+deploy_hosts: ansible:ndb
 # Ndb cluster version and basic rpm name
 remote_repo: https://dev.mysql.com/get/mysql80-community-release-el7-3.noarch.rpm
 ndb_version: 8.0.21-1.el7.x86_64
@@ -16,7 +16,7 @@ management_server_name: "mysql-cluster-community-management-server-{{ ndb_versio
 cluster_embedded_name: "mysql-cluster-community-embedded-compat-{{ ndb_version }}"
 cluster_memcached_name: "mysql-cluster-community-memcached-{{ ndb_version }}"
 # Directory path
-install_dir: /data
+install_dir: /var/local
 package_dir: "{{ install_dir }}/package"
 basedir: "{{ install_dir }}/mcc"
 shelldir: "{{ install_dir }}/shell"
