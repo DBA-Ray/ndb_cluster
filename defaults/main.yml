@@ -24,3 +24,6 @@ monitordir: "{{ install_dir }}/monitor"
 logdir: "{{ basedir }}/log"
 # Basic parameters
 web_port: 8080
+# Master info
+mysql_port: 3377
+master_host: sql2
