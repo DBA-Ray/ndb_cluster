@@ -28,7 +28,7 @@
   blockinfile:
     path: /usr/share/mysql-8.0/mcc/frontend/js/mcc/configuration/deploy.js
     marker: "        /* {mark} ANSIBLE MANAGED BLOCK */"
-    insertafter: "        // THE FLAG OF RAY"
+    insertafter: "// THE FLAG OF RAY"
     block: |
       /***DBA RAY***/
               addln(configFile, 'default-storage-engine=ndbcluster');
