@@ -1,8 +1,8 @@
 ---
-- hosts: slave
+- hosts: "{{ deploy_hosts }}"
   gather_facts: True
   remote_user: root
   vars:
-    slave: True # Whether to initial slave
+    mcc: True # Whether to upgrade mysql cluster
   roles:
     - dba_ray.ndb_cluster
