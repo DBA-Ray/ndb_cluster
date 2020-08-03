@@ -1,16 +1,22 @@
 ---
 # tasks file for dba_ray.ndb_cluster
 - include: password.yml
-  when: (mcc | default(False)) or (slave | default(False))
+  when: (mcc | default(False)) or (slave | default(False)) or (mcc_command | default(False)) or (tools | default(False))
 
 - include: system_check.yml
-  when: (mcc | default(False)) or (slave | default(False))
+  when: (mcc | default(False)) or (slave | default(False)) or (mcc_command | default(False))
 
 - include: initial_start.yml
   when: mcc | default(False)
 
+- include: initial_start_command.yml
+  when: mcc_command | default(False)
+
 - include: initial_start_slave.yml
   when: slave | default(False)
+
+- include: install_tools.yml
+  when: tools | default(False)
 
 - include: upgrade.yml
   when: is_update | default(False)

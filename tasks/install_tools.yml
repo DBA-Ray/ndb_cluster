@@ -1,10 +1,29 @@
 - name: Install the percona-release repository
   yum:
-    name: https://www.percona.com/downloads/percona-release/redhat/LATEST/percona-release-latest.noarch.rpm
+    name: https://repo.percona.com/yum/percona-release-latest.noarch.rpm
     state: present
+  register: percona_release
+  retries: 3
+  until: percona_release is succeeded
 
-- name: Copy the percona-release.repo
-  copy: src=percona-release.repo dest=/etc/yum.repos.d/percona-release.repo
+#- name: Copy the percona-release.repo
+#  copy: src=percona-release.repo dest=/etc/yum.repos.d/percona-release.repo
+
+- name: Unstall pmm-client.x86_64
+  yum:
+    name: pmm-client.x86_64
+    state: absent
+
+- name: Install the percona tools
+  yum:
+    name: "{{ tools }}"
+  vars:
+    tools:
+    - pmm2-client.x86_64
+    state: latest
+  register: result
+  retries: 7
+  until: result is succeeded
 
 - name: Install the percona tools
   yum:
@@ -13,8 +32,18 @@
     tools:
     - percona-toolkit.x86_64
     - percona-xtrabackup-80.x86_64
-    - pmm-client.x86_64
     state: latest
   register: result
   retries: 7
   until: result is succeeded
+  when: >
+        ( inventory_hostname_short in groups.sql_node ) or
+        ( inventory_hostname_short in groups.slave_node )
+
+- name: Config pmm server via pmm-admin
+  shell: "pmm-admin config --server-insecure-tls --server-url=https://admin:admin@ansible:443"
+
+- name: Add mysql via pmm-admin for mgr&slave_monitor&mysql group
+  shell: "pmm-admin add mysql --query-source=slowlog --username=pmm --password='{{ pmm_password }}' --host=127.0.0.1 --port={{ mysql_port }}"
+  when: >
+        ( inventory_hostname_short in groups.sql_node )

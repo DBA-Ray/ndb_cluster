@@ -3,6 +3,6 @@
   gather_facts: True
   remote_user: root
   vars:
-    mcc: True # Whether to upgrade mysql cluster
+    mcc: True # Whether to install mysql cluster via auto-installer
   roles:
     - dba_ray.ndb_cluster

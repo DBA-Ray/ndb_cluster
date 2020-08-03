@@ -1,24 +1,10 @@
 #initial the slave for ndb cluster
-- name: Ensure group "mcc" exists
-  group:
-    name: mcc
-    state: present
-
-- name: Ensure the user "mcc" exists
-  user:
-    name: mcc
-    group: mcc
-    password: "{{ mcc_password | password_hash('sha512') }}"
-    update_password: always
-
 - name: Create directories for slave
-  file: path={{ item }} state=directory owner=mcc group=mcc
+  file: path={{ item }} state=directory owner=mysql group=mysql
   with_items:
-    - "{{ package_dir }}"
     - "{{ shelldir }}"
     - "{{ monitordir }}"
     - "{{ basedir }}"
-    - "{{ datadir }}"
 
 - name: Rendering mysql parameter file
   template:
@@ -28,7 +14,13 @@
     group: mysql
     mode: 0644
   with_items:
+    - { src: 'mysql.conf.j2', dest: '/usr/lib/tmpfiles.d/mysql.conf' }
+    - { src: 'mysqld.service.j2', dest: '/usr/lib/systemd/system/mysqld.service' }
     - { src: 'my.cnf.j2', dest: "{{ basedir }}/my.cnf" }
+
+- name: Force systemd to reread configs
+  systemd:
+    daemon_reload: yes
 
 - name: Rendering bash file
   template:
@@ -66,6 +58,13 @@
   retries: 7
   until: result is succeeded
 
+- name: Initial mysql server
+  shell: "{{ item }}"
+  with_items:
+    - "/usr/sbin/mysqld --defaults-file={{ basedir }}/my.cnf --user=mysql \
+    --initialize-insecure --basedir={{ basedir }} --datadir={{ datadir }}"
+    - "/usr/bin/mysql_ssl_rsa_setup --datadir={{ datadir }}"
+
 - name: Start mysql server
   systemd:
     name: mysqld
@@ -77,25 +76,35 @@
     state: started
     enabled: yes
 
-- name: Obtain root password tempory
-  shell: "grep -i root@localhost: /var/log/mysqld.log | awk '{ print $13 }'"
-  register: root_password_temp
-
 - name: Modify root password
   mysql_user:
     login_user: root
-    login_password: "{{ root_password_temp.stdout }}"
+    login_password:
     name: root
     password: "{{ root_password }}"
     update_password: always
-    login_port: "{{ mysql_port }}"
+    login_port: "{{ local_mysql_port }}"
     priv: '*.*:ALL,GRANT'
+    login_unix_socket: /var/lib/mysql/mysql.sock
+    state: present
+
+- name: Add pmm user
+  mysql_user:
+    login_user: root
+    login_password: "{{ root_password }}"
+    name: pmm
+    password: "{{ pmm_password }}"
+    update_password: always
+    login_port: "{{ local_mysql_port }}"
+    host: 127.0.0.1
+    priv: '*.*:SELECT,RELOAD,PROCESS,SUPER,REPLICATION CLIENT,BACKUP_ADMIN/PERFORMANCE_SCHEMA.*:SELECT,UPDATE,DELETE,DROP'
+    sql_log_bin: no
     login_unix_socket: /var/lib/mysql/mysql.sock
     state: present
 
 - name: Config replication for ndb
   mysql_replication:
-    login_port: "{{ mysql_port }}"
+    login_port: "{{ local_mysql_port }}"
     login_user: root
     login_password: "{{ root_password }}"
     login_unix_socket: /var/lib/mysql/mysql.sock
@@ -105,12 +114,12 @@
     master_user: repl
     master_password: "{{ mysql_monitor_password }}"
     master_auto_position: no
-    master_log_file: binlog.000001
+    master_log_file: mysql-bin.000001
     master_log_pos: 156
 
 - name: Start slave status for slaves
   mysql_replication:
-    login_port: "{{ mysql_port }}"
+    login_port: "{{ local_mysql_port }}"
     login_user: root
     login_password: "{{ root_password }}"
     login_unix_socket: /var/lib/mysql/mysql.sock

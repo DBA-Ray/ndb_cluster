@@ -19,29 +19,15 @@
     name: "{{ packages }}"
     state: latest
 
-- name: Stop mysql server via systemctl
-  systemd:
-    name: mysqld
-    state: stopped
-  when: whether_uninstall
-
-- name: Stop mysql server via mysqladmin
-  shell: "mysqladmin -uroot -h127.0.0.1 shutdown"
-  when: whether_uninstall
-
-- name: Stop ndb_mgm
-  shell: " ndb_mgm -e shutdown"
-  when: whether_uninstall and (ansible_hostname == "ansible")
-
 - name: Uninstall mysql
   yum:
-    name: mysql*
+    name: mysql-cluster*
     state: absent
   when: whether_uninstall
 
 - name: Remove existing mcc directory
   file:
-    path: "{{ basedir }}"
+    path: "{{ install_dir }}"
     state: absent
     remote_src: 'True'
   when: whether_uninstall

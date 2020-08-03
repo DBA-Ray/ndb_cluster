@@ -1,0 +1,45 @@
+#!/bin/bash
+
+#自动根据memory计算出DataMemory大小
+
+#基准运算常量
+
+a=8
+
+b=10
+
+#mem=`free -mh|egrep Mem|awk '{print $2}'|awk '{sub(/.$/,"")}1'|awk '{print int($1+0.5)}'`
+
+mem={{ hostvars[groups.data_node.0]['ansible_memtotal_mb'] }}
+
+DataMemory=`expr $mem \* $a / $b`
+
+sed -i 's/DataMemory=1G/DataMemory='"${DataMemory}"'M/g' {{ management_node_dir }}/config.ini
+
+ndb_HostName=`grep -i ndb /etc/hosts|awk '{print $2}'`
+
+for i in $ndb_HostName
+
+do 
+
+ndb_NodeId=`echo ${i: -1}`
+
+echo $ndb_NodeId $i
+
+sed -i '$a\[NDBD]\nNodeId='"${ndb_NodeId}"'\nHostName='"${i}"'\nDataDir={{ data_node_dir }}\nServerPort=11860\n' {{ management_node_dir }}/config.ini
+
+done
+
+sql_HostName=`grep -i mcc_sql /etc/hosts|awk '{print $2}'`
+
+for i in $sql_HostName
+
+do 
+
+sql_NodeId=`echo ${i: -3}`
+
+echo $sql_NodeId $i
+
+sed -i '$a\[MYSQLD]\nNodeId='"${sql_NodeId}"'\nHostName='"${i}"'\n' {{ management_node_dir }}/config.ini
+
+done

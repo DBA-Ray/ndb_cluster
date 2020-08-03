@@ -1,0 +1,8 @@
+---
+- hosts: sql_node:data_node
+  gather_facts: True
+  remote_user: root
+  vars:
+    tools: True # Whether to install percona tools and connect to pmm server
+  roles:
+    - dba_ray.ndb_cluster

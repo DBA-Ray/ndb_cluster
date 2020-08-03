@@ -1,0 +1,8 @@
+---
+- hosts: ansible:sql_node:data_node
+  gather_facts: True
+  remote_user: root
+  vars:
+    mcc_command: True # Whether to install mysql cluster via commands
+  roles:
+    - dba_ray.ndb_cluster

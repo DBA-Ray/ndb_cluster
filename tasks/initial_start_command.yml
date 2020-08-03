@@ -1,42 +1,25 @@
-#initial for ndb cluster auto installer
-- name: Ensure group "mysqlcluster" exists
-  group:
-    name: mysqlcluster
-    state: present
-
-- name: Ensure the user "mysqlcluster" exists
-  user:
-    name: mysqlcluster
-    group: mysqlcluster
-    password: "{{ mysqlcluster_password | password_hash('sha512') }}"
-    update_password: always
+#initial for ndb cluster via commands
 
 - name: Install the ndb cluster repo
   yum:
     name: "{{ remote_repo }}"
     state: present
+  register: repo
+  retries: 7
+  until: repo is succeeded
 
 - name: Copy the mysql-community.repo
   copy: src=mysql-community.repo dest=/etc/yum.repos.d/mysql-community.repo
 
-- name: Install the ndb cluster basic rpm
-  yum:
-    name: ["{{ cluster_server_name }}", "{{ cluster_lib_compat_name }}", "{{ date_node_name }}", "{{ ndb_client_name }}", "{{ management_server_name }}", "{{ cluster_embedded_name }}", "{{ cluster_memcached_name }}"]
-    state: present
-  register: result
-  retries: 7
-  until: result is succeeded
+#######sql_node#######
 
-- name: Create directories for mysqlcluster
-  file: path={{ item }} state=directory owner=mysqlcluster group=mysqlcluster
+- name: Create directories for sql_node
+  file: path={{ item }} state=directory owner=mysql group=mysql
   with_items:
-    - "{{ package_dir }}"
     - "{{ shelldir }}"
     - "{{ monitordir }}"
-    - "{{ basedir }}"
-    - "{{ etcdir }}"
-    - "{{ logdir }}"
-  when: ansible_hostname in groups.sql_node
+    - "{{ sql_node_dir }}"
+  when: inventory_hostname_short in groups.sql_node
 
 - name: Rendering mysql parameter file
   template:
@@ -46,10 +29,15 @@
     group: mysql
     mode: 0644
   with_items:
-    - { src: 'mysql.conf.j2', dest: '/usr/lib/tmpfiles.d/mysql.conf' }
-    - { src: 'mysqld.service.j2', dest: '/usr/lib/systemd/system/mysqld.service' }
-    - { src: 'my.cnf.j2', dest: "{{ etcdir }}/my.cnf" }
-  when: ansible_hostname in groups.sql_node
+    - { src: 'mysql.conf.sql.j2', dest: '/usr/lib/tmpfiles.d/mysql.conf' }
+    - { src: 'mysqld.service.sql.j2', dest: '/usr/lib/systemd/system/mysqld.service' }
+    - { src: 'my.cnf.sql.j2', dest: "{{ sql_node_dir }}/my.cnf" }
+  when: inventory_hostname_short in groups.sql_node
+
+- name: Force systemd to reread configs
+  systemd:
+    daemon_reload: yes
+  when: inventory_hostname_short in groups.sql_node
 
 - name: Rendering bash file
   template:
@@ -59,41 +47,74 @@
     group: root
     mode: 0744
   with_items:
-    - { src: 'my.cnf_auto.sh.j2', dest: "{{ etcdir }}/my.cnf_auto.sh" }
-    - { src: 'see_log.sh.j2', dest: "{{ shelldir }}/see_log.sh" }
-  when: ansible_hostname in groups.sql_node
+    - { src: 'my.cnf_auto.sh.sql.j2', dest: "{{ sql_node_dir }}/my.cnf_auto.sh" }
+  when: inventory_hostname_short in groups.sql_node
 
 - name: Auto config my.cnf
-  shell: "sh -x {{ etcdir }}/my.cnf_auto.sh"
-  when: ansible_hostname in groups.sql_node
+  shell: "sh -x {{ sql_node_dir }}/my.cnf_auto.sh"
+  when: inventory_hostname_short in groups.sql_node
 
 - name: Remove my.cnf_auto.sh
   file:
-    path: "{{ etcdir }}/my.cnf_auto.sh"
+    path: "{{ sql_node_dir }}/my.cnf_auto.sh"
     state: absent
     remote_src: yes
-  when: ansible_hostname in groups.sql_node
+  when: inventory_hostname_short in groups.sql_node
 
 - name: Obtain user_whitelist
   shell: "cat /tmp/user_whitelist.txt"
   register: user_whitelist
-  when: ansible_hostname in groups.sql_node
+  when: inventory_hostname_short in groups.sql_node
+
+- name: Install the ndb cluster sql server
+  yum:
+    name: ["{{ cluster_server_name }}", "{{ cluster_lib_compat_name }}"]
+    state: present
+  register: result
+  retries: 7
+  until: result is succeeded
+  when: inventory_hostname_short in groups.sql_node
 
 - name: Initial mysql server
   shell: "{{ item }}"
   with_items:
-    - "{{ basedir }}/bin/mysqld --defaults-file={{ etcdir }}/my.cnf --user=mysql --lower-case-table-names=1 \
-    --initialize-insecure --basedir={{ basedir }} --datadir={{ datadir }}"
-    - "{{ basedir }}/bin/mysql_ssl_rsa_setup --datadir={{ datadir }}"
-  when: ansible_hostname in groups.sql_node
+    - "/usr/sbin/mysqld --defaults-file={{ sql_node_dir }}/my.cnf --user=mysql \
+    --initialize-insecure --basedir={{ sql_node_dir }} --datadir={{ sql_node_data_dir }}"
+    - "/usr/bin/mysql_ssl_rsa_setup --datadir={{ sql_node_data_dir }}"
+  when: inventory_hostname_short in groups.sql_node
 
-- name: Create directories for mysqlcluster
-  file: path={{ item }} state=directory owner=mysqlcluster group=mysqlcluster
+- name: Enable mysql server
+  systemd:
+    name: mysqld
+    enabled: yes
+  when: inventory_hostname_short in groups.sql_node
+
+#######data_node#######
+
+- name: Create directories for data_node
+  file: path={{ item }} state=directory owner=mysql group=mysql
   with_items:
-    - "{{ basedir }}"
-  when: ansible_hostname in groups.data_node or ansible_hostname == "ansbile"
+    - "{{ data_node_dir }}"
+  when: inventory_hostname_short in groups.data_node
 
-- name: Rendering config.ini file
+- name: Install the ndb cluster data server
+  yum:
+    name: ["{{ date_node_name }}", "{{ ndb_client_name }}", "{{ cluster_embedded_name }}", "{{ cluster_memcached_name }}"] 
+    state: present
+  register: result
+  retries: 7
+  until: result is succeeded
+  when: inventory_hostname_short in groups.data_node
+
+#######management_node#######
+
+- name: Create directories for management_node
+  file: path={{ item }} state=directory owner=mysql group=mysql
+  with_items:
+    - "{{ management_node_dir }}"
+  when: inventory_hostname_short == "ansible"
+
+- name: Rendering management_node parameter file
   template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
@@ -101,5 +122,132 @@
     group: mysql
     mode: 0644
   with_items:
-    - { src: 'config.ini.j2', dest: '{{ basedir }}/config.ini' }
-  when: ansible_hostname == "ansbile"
+    - { src: 'config.ini.j2', dest: "{{ management_node_dir }}/config.ini" }
+    - { src: 'config_auto.sh.j2', dest: "{{ management_node_dir }}/config_auto.sh" }
+  when: inventory_hostname_short == "ansible"
+
+- name: Auto config config.ini
+  shell: "sh -x {{ management_node_dir }}/config_auto.sh"
+  when: inventory_hostname_short == "ansible"
+
+- name: Remove config_auto.sh
+  file:
+    path: "{{ management_node_dir }}/config_auto.sh"
+    state: absent
+    remote_src: yes
+  when: inventory_hostname_short == "ansible"
+
+- name: Install the ndb cluster management server
+  yum:
+    name: ["{{ management_server_name }}"]
+    state: present
+  register: result
+  retries: 7
+  until: result is succeeded
+  when: inventory_hostname_short == "ansible"
+
+#######start cluster#######
+
+- name: Start management_node
+  shell: "ndb_mgmd --config-file={{ management_node_dir }}/config.ini --initial --ndb-nodeid=237 --config-dir={{ management_node_dir }}/"
+  tags: startup
+  when: inventory_hostname_short == "ansible"
+
+- name: Start data_node
+  shell: "ndbmtd --ndb-connectstring=ansible:1186"
+  tags: startup
+  when: inventory_hostname_short in groups.data_node
+
+- name: Wait data nodes started
+  shell: "grep finished {{ data_node_dir }}/ndb_1_out.log | tail -1 | awk '{print $16}'"
+  register: started
+  until: started.stdout.startswith("finished")
+  retries: 10
+  delay: 30
+  when: inventory_hostname_short == "ndb1"
+  tags: startup
+
+- name: Start sql_node
+  systemd:
+    name: mysqld
+    state: started
+  tags: startup
+  when: inventory_hostname_short in groups.sql_node
+
+- name: Modify root password
+  mysql_user:
+    login_user: root
+    login_password:
+    name: root
+    password: "{{ root_password }}"
+    update_password: always
+    login_port: "{{ local_mysql_port }}"
+    priv: '*.*:ALL,GRANT'
+    login_unix_socket: /var/lib/mysql/mysql.sock
+    state: present
+  when: inventory_hostname_short in groups.sql_node
+
+- name: Add remote root user
+  mysql_user:
+    login_user: root
+    login_password: "{{ root_password }}"
+    name: root
+    password: "{{ root_password }}"
+    update_password: always
+    login_port: "{{ local_mysql_port }}"
+    host: "{{ user_whitelist.stdout }}"
+    priv: '*.*:ALL,GRANT'
+    sql_log_bin: no
+    login_unix_socket: /var/lib/mysql/mysql.sock
+    state: present
+  when: inventory_hostname_short in groups.sql_node
+
+- name: Add repl user
+  mysql_user:
+    login_user: root
+    login_password: "{{ root_password }}"
+    name: repl
+    password: "{{ mysql_monitor_password }}"
+    update_password: always
+    login_port: "{{ local_mysql_port }}"
+    host: "{{ user_whitelist.stdout }}"
+    priv: '*.*:REPLICATION SLAVE,SUPER,REPLICATION CLIENT,SELECT'
+    sql_log_bin: no
+    login_unix_socket: /var/lib/mysql/mysql.sock
+    state: present
+  when: inventory_hostname_short in groups.sql_node
+
+- name: Add pmm user
+  mysql_user:
+    login_user: root
+    login_password: "{{ root_password }}"
+    name: pmm
+    password: "{{ pmm_password }}"
+    update_password: always
+    login_port: "{{ local_mysql_port }}"
+    host: 127.0.0.1
+    priv: '*.*:SELECT,RELOAD,PROCESS,SUPER,REPLICATION CLIENT/PERFORMANCE_SCHEMA.*:SELECT,UPDATE,DELETE,DROP'
+    sql_log_bin: no
+    login_unix_socket: /var/lib/mysql/mysql.sock
+    state: present
+  when: inventory_hostname_short in groups.sql_node
+
+#######shutdown cluster#######
+
+- name: Stop sql_node
+  systemd:
+    name: mysqld
+    state: stopped
+  tags: shutdown
+  when: inventory_hostname_short in groups.sql_node
+
+- name: Stop management_node
+  shell: "ndb_mgm localhost 1186 --execute=shutdown --connect-retries=2"
+  tags: shutdown
+  when: inventory_hostname_short == "ansible"
+
+- name: Replace InitFragmentLogFiles=FULL
+  lineinfile:
+    dest: "{{ management_node_dir }}/config.ini"
+    regexp: "^InitFragmentLogFiles="
+    line: "InitFragmentLogFiles=FULL"

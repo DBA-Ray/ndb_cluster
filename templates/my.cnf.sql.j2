@@ -1,5 +1,19 @@
 [mysqld]
 
+# ndb parameters
+  ndbcluster = on
+  ndb-nodeid = 200
+  ndb-connectstring = ansible:1186
+  ndb_log_update_as_write = 0
+  ndb_log_bin = 1
+# daemonize = ON
+  ndb-wait-setup = 1
+  ndb-batch-size = 1
+  ndb-blob-read-batch-bytes = 1
+  ndb-blob-write-batch-bytes = 1
+  ndb_read_backup = 1
+  default-storage-engine=ndbcluster
+
 # 二进制日志
   log_bin = mysql-bin
   log_bin_index = mysql-bin.index
@@ -26,13 +40,13 @@
   plugin_dir = /usr/lib64/mysql/plugin
   lc_messages_dir = /usr/share/mysql-8.0
   character_sets_dir = /usr/share/mysql-8.0/charsets
-  datadir = {{ datadir }}
-  tmpdir = {{ datadir }}
+  datadir = {{ sql_node_data_dir }}
+  tmpdir = {{ sql_node_data_dir }}
   socket = /var/lib/mysql/mysql.sock
-  log-error = {{ basedir }}/mysqld.log
+  log-error = {{ sql_node_dir }}/mysqld.log
   pid-file = /var/run/mysqld/mysqld.pid
   default_authentication_plugin = mysql_native_password
-  port = {{ local_mysql_port }}
+  port = {{ mysql_port }}
   character_set_server = utf8mb4
   collation_server = utf8mb4_0900_ai_ci
   auto_increment_offset = 1
@@ -54,12 +68,11 @@
   log_slave_updates = 1
   relay_log = relay
   relay_log_index = relay.index
-  replicate_wild_ignore_table = mysql.ndb_apply_status
 
 # 开启慢查询
-  long_query_time = 1
+  long_query_time = 0.5
   slow_query_log = 1
-  slow_query_log_file = {{ basedir }}/slow.log
+  slow_query_log_file = {{ sql_node_dir }}/slow.log
 
 # 记录管理语句
   log_slow_admin_statements = 1

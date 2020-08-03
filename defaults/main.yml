@@ -15,15 +15,21 @@ ndb_client_name: "mysql-cluster-community-ndbclient-{{ ndb_version }}"
 management_server_name: "mysql-cluster-community-management-server-{{ ndb_version }}"
 cluster_embedded_name: "mysql-cluster-community-embedded-compat-{{ ndb_version }}"
 cluster_memcached_name: "mysql-cluster-community-memcached-{{ ndb_version }}"
-# Directory path
+# Directory path for slave
 install_dir: /var/local
-package_dir: "{{ install_dir }}/package"
-basedir: "{{ install_dir }}/mcc"
+basedir: "{{ install_dir }}/mysql"
+datadir: "{{ basedir }}/data"
 shelldir: "{{ install_dir }}/shell"
 monitordir: "{{ install_dir }}/monitor"
-logdir: "{{ basedir }}/log"
+# Directory path for mcc
+sql_node_dir: "{{ install_dir }}/sql_mcc"
+sql_node_data_dir: "{{ sql_node_dir }}/data"
+data_node_dir: "{{ install_dir }}/data_mcc"
+management_node_dir: "{{ install_dir }}/managment_mcc"
 # Basic parameters
 web_port: 8080
+# my.cnf info
+local_mysql_port: 3306
 # Master info
 mysql_port: 3377
-master_host: sql2
+master_host: 172.17.16.7

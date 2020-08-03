@@ -14,9 +14,9 @@
 - name: Create directories for mcc
   file: path={{ item }} state=directory owner=mcc group=mcc
   with_items:
-    - "{{ package_dir }}"
     - "{{ shelldir }}"
     - "{{ monitordir }}"
+  when: inventory_hostname_short in groups.sql_node
 
 - name: Install the ndb cluster repo
   yum:
@@ -54,7 +54,7 @@
 - name: Backp orignal deploy.js and parameters.js
   copy:
     src: "{{ item }}"
-    dest: "{{ package_dir }}"
+    dest: "{{ shelldir }}"
     remote_src: yes
     owner: root
     group: root
