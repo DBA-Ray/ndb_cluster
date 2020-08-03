@@ -14,7 +14,7 @@
     name: pmm-client.x86_64
     state: absent
 
-- name: Install the percona tools
+- name: Install the percona tools for pmm2-client
   yum:
     name: "{{ tools }}"
   vars:
@@ -25,7 +25,7 @@
   retries: 7
   until: result is succeeded
 
-- name: Install the percona tools
+- name: Install the percona tools for mysql
   yum:
     name: "{{ tools }}"
   vars:

@@ -85,6 +85,7 @@
     update_password: always
     login_port: "{{ local_mysql_port }}"
     priv: '*.*:ALL,GRANT'
+    sql_log_bin: no
     login_unix_socket: /var/lib/mysql/mysql.sock
     state: present
 
@@ -115,7 +116,7 @@
     master_password: "{{ mysql_monitor_password }}"
     master_auto_position: no
     master_log_file: mysql-bin.000001
-    master_log_pos: 156
+    master_log_pos: 152
 
 - name: Start slave status for slaves
   mysql_replication:

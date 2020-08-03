@@ -183,6 +183,7 @@
     update_password: always
     login_port: "{{ local_mysql_port }}"
     priv: '*.*:ALL,GRANT'
+    sql_log_bin: no
     login_unix_socket: /var/lib/mysql/mysql.sock
     state: present
   when: inventory_hostname_short in groups.sql_node
