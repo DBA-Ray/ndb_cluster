@@ -68,7 +68,7 @@
 
 - name: Install the ndb cluster sql server
   yum:
-    name: ["{{ cluster_server_name }}", "{{ cluster_lib_compat_name }}"]
+    name: ["{{ cluster_server_name }}", "{{ cluster_lib_compat_name }}", "mysql-shell"]
     state: present
   register: result
   retries: 7

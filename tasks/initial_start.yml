@@ -28,7 +28,7 @@
 
 - name: Install the ndb cluster basic rpm
   yum:
-    name: ["{{ cluster_server_name }}", "{{ cluster_lib_compat_name }}", "{{ date_node_name }}", "{{ ndb_client_name }}", "{{ management_server_name }}", "{{ cluster_embedded_name }}", "{{ cluster_memcached_name }}"] 
+    name: ["{{ cluster_server_name }}", "{{ cluster_lib_compat_name }}", "{{ date_node_name }}", "{{ ndb_client_name }}", "{{ management_server_name }}", "{{ cluster_embedded_name }}", "{{ cluster_memcached_name }}", "mysql-shell"]
     state: present
   register: result
   retries: 7
