@@ -1,15 +1,8 @@
-- name: Upgrade the mysql-cluster*
-  yum:
-    name: mysql-cluster*
-    state: latest
-  register: result
-  retries: 7
-  until: result is succeeded
 
-- name: Backp orignal deploy.js and parameters.js
+- name: Backp deploy.js and parameters.js
   copy:
     src: "{{ item }}"
-    dest: "{{ package_dir }}"
+    dest: "{{ shelldir }}"
     remote_src: yes
     owner: root
     group: root
@@ -18,58 +11,26 @@
   with_items:
     - /usr/share/mysql-8.0/mcc/frontend/js/mcc/configuration/deploy.js
     - /usr/share/mysql-8.0/mcc/frontend/js/mcc/configuration/parameters.js
-  when: inventory_hostname_short == "ansible" and whether_modify_parameters
+  when: inventory_hostname_short == "ansible"
 
-- name: Add the flag of ray mysql parameters
-  shell: "sed -i '2199i\ // THE FLAG OF RAY' /usr/share/mysql-8.0/mcc/frontend/js/mcc/configuration/deploy.js"
-  when: inventory_hostname_short == "ansible" and whether_modify_parameters
+- name: Upgrade the mysql-cluster*
+  yum:
+    name: mysql-cluster*
+    state: latest
+  register: result
+  retries: 7
+  until: result is succeeded
 
-- name: Add mysql parameters for deploy.js
-  blockinfile:
-    path: /usr/share/mysql-8.0/mcc/frontend/js/mcc/configuration/deploy.js
-    marker: "        /* {mark} ANSIBLE MANAGED BLOCK */"
-    insertafter: "// THE FLAG OF RAY"
-    block: |
-      /***DBA RAY***/
-              addln(configFile, 'default-storage-engine=ndbcluster');
-              addln(configFile, 'character_set_server=utf8mb4');
-              addln(configFile, 'collation_server=utf8mb4_0900_ai_ci');
-              addln(configFile, 'default_authentication_plugin=mysql_native_password');
-              addln(configFile, 'long_query_time=0.5');
-              addln(configFile, 'slow_query_log=1');
-              addln(configFile, 'slow_query_log_file={{ monitordir }}/slow.log');
-              addln(configFile, 'max_connections=2000');
-              addln(configFile, 'max_connect_errors=200000');
-              addln(configFile, 'max_allowed_packet=1073741824');
-              addln(configFile, 'skip_external_locking');
-              addln(configFile, 'skip_name_resolve');
-              addln(configFile, 'wait_timeout=3600');
-              addln(configFile, 'interactive_timeout=3600');
-              addln(configFile, 'log_timestamps=system');
-              addln(configFile, 'binlog_transaction_dependency_tracking=WRITESET');
-              addln(configFile, 'transaction_write_set_extraction=XXHASH64');
-              addln(configFile, 'binlog_expire_logs_seconds=604800');
-              addln(configFile, 'binlog_format=row');
-              addln(configFile, 'binlog_transaction_compression=ON');
-              addln(configFile, 'binlog_transaction_compression_level_zstd=12');
-              addln(configFile, 'binlog_cache_size=256K');
-              addln(configFile, 'binlog_stmt_cache_size=32k');
-              addln(configFile, 'sync_binlog=1');
-              addln(configFile, 'thread_cache_size=400');
-              addln(configFile, 'explicit_defaults_for_timestamp=1');
-              addln(configFile, 'table_open_cache=20000');
-              addln(configFile, 'table_definition_cache=20000');
-              addln(configFile, 'ndb_log_update_as_write=0');
-              addln(configFile, 'ndb_log_bin=1');
-  when: inventory_hostname_short == "ansible" and whether_modify_parameters
-
-- name: Rendering parameters.js file
-  template:
-    src: "{{ item.src }}"
-    dest: "{{ item.dest }}"
+- name: Copy back deploy.js and parameters.js
+  copy:
+    src: "{{ item }}"
+    dest: "/usr/share/mysql-8.0/mcc/frontend/js/mcc/configuration"
+    remote_src: yes
     owner: root
     group: root
-    mode: 0644
+    mode: '0644'
+    backup: no
   with_items:
-    - { src: 'parameters.js.j2', dest: '/usr/share/mysql-8.0/mcc/frontend/js/mcc/configuration/parameters.js' }
-  when: inventory_hostname_short == "ansible" and whether_modify_parameters
+    - "{{ shelldir }}/deploy.js"
+    - "{{ shelldir }}/parameters.js"
+  when: inventory_hostname_short == "ansible"

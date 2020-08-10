@@ -93,6 +93,9 @@
               addln(configFile, 'log_timestamps=system');
               addln(configFile, 'binlog_transaction_dependency_tracking=WRITESET');
               addln(configFile, 'transaction_write_set_extraction=XXHASH64');
+              addln(configFile, 'log_bin=mysql-bin');
+              addln(configFile, 'log_bin_index=mysql-bin.index');
+              addln(configFile, 'binlog_rows_query_log_events=1');
               addln(configFile, 'binlog_expire_logs_seconds=604800');
               addln(configFile, 'binlog_format=row');
               addln(configFile, 'binlog_transaction_compression=ON');
