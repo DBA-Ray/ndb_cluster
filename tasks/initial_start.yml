@@ -76,40 +76,40 @@
     insertafter: "// THE FLAG OF RAY"
     block: |
       /***DBA RAY***/
-              addln(configFile, 'default-storage-engine=ndbcluster');
-              addln(configFile, 'character_set_server=utf8mb4');
-              addln(configFile, 'collation_server=utf8mb4_0900_ai_ci');
-              addln(configFile, 'default_authentication_plugin=mysql_native_password');
-              addln(configFile, 'long_query_time=0.5');
-              addln(configFile, 'slow_query_log=1');
-              addln(configFile, 'slow_query_log_file={{ monitordir }}/slow.log');
-              addln(configFile, 'max_connections=2000');
-              addln(configFile, 'max_connect_errors=200000');
-              addln(configFile, 'max_allowed_packet=1073741824');
+              addln(configFile, 'ndb_log_update_as_write = 0');
+              addln(configFile, 'ndb_log_bin = 1');
+              addln(configFile, 'default-storage-engine = ndbcluster');
+              addln(configFile, 'log_bin = mysql-bin');
+              addln(configFile, 'log_bin_index = mysql-bin.index');
+              addln(configFile, 'binlog_format = row');
+              addln(configFile, 'binlog_expire_logs_seconds = 604800');
+              addln(configFile, 'binlog_transaction_dependency_tracking = WRITESET');
+              addln(configFile, 'binlog_checksum = NONE');
+              addln(configFile, 'binlog_transaction_compression = ON');
+              addln(configFile, 'binlog_transaction_compression_level_zstd = 7');
+              addln(configFile, 'transaction_write_set_extraction = XXHASH64');
+              addln(configFile, 'sync_binlog = 1');
+              addln(configFile, 'binlog_rows_query_log_events = 1');
+              addln(configFile, 'binlog_cache_size = 256K');
+              addln(configFile, 'binlog_stmt_cache_size = 32k');
+              addln(configFile, 'character_set_server = utf8mb4');
+              addln(configFile, 'collation_server = utf8mb4_0900_ai_ci');
+              addln(configFile, 'log_timestamps = system');
+              addln(configFile, 'long_query_time = 0.5');
+              addln(configFile, 'slow_query_log = 1');
+              addln(configFile, 'slow_query_log_file = {{ monitordir }}/slow.log');
+              addln(configFile, 'log_slow_admin_statements = 1');
+              addln(configFile, 'max_connections = 2000');
+              addln(configFile, 'max_connect_errors = 100000');
+              addln(configFile, 'max_allowed_packet = 1073741824');
+              addln(configFile, 'thread_cache_size = 400');
+              addln(configFile, 'table_open_cache = 20000');
+              addln(configFile, 'table_definition_cache = 20000');
+              addln(configFile, 'explicit_defaults_for_timestamp = 1');
               addln(configFile, 'skip_external_locking');
               addln(configFile, 'skip_name_resolve');
-              addln(configFile, 'wait_timeout=3600');
-              addln(configFile, 'interactive_timeout=3600');
-              addln(configFile, 'log_timestamps=system');
-              addln(configFile, 'binlog_transaction_dependency_tracking=WRITESET');
-              addln(configFile, 'transaction_write_set_extraction=XXHASH64');
-              addln(configFile, 'log_bin=mysql-bin');
-              addln(configFile, 'log_bin_index=mysql-bin.index');
-              addln(configFile, 'binlog_rows_query_log_events=1');
-              addln(configFile, 'binlog_expire_logs_seconds=604800');
-              addln(configFile, 'binlog_format=row');
-              addln(configFile, 'binlog_transaction_compression=ON');
-              addln(configFile, 'binlog_transaction_compression_level_zstd=12');
-              addln(configFile, 'binlog_cache_size=256K');
-              addln(configFile, 'binlog_stmt_cache_size=32k');
-              addln(configFile, 'sync_binlog=1');
-              addln(configFile, 'thread_cache_size=400');
-              addln(configFile, 'explicit_defaults_for_timestamp=1');
-              addln(configFile, 'table_open_cache=20000');
-              addln(configFile, 'table_definition_cache=20000');
-              addln(configFile, 'ndb_log_update_as_write=0');
-              addln(configFile, 'ndb_log_bin=1');
-              addln(configFile, 'slave_allow_batching=1');
+              addln(configFile, 'wait_timeout = 3600');
+              addln(configFile, 'interactive_timeout = 3600');
   when: inventory_hostname_short == "ansible" and whether_modify_parameters
 
 - name: Rendering parameters.js file
