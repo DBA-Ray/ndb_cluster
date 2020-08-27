@@ -99,7 +99,7 @@
 
 - name: Install the ndb cluster data server
   yum:
-    name: ["{{ date_node_name }}", "{{ ndb_client_name }}", "{{ cluster_embedded_name }}", "{{ cluster_memcached_name }}"] 
+    name: ["{{ date_node_name }}", "{{ ndb_client_name }}", "{{ cluster_embedded_name }}", "{{ cluster_memcached_name }}"]
     state: present
   register: result
   retries: 7
@@ -139,7 +139,7 @@
 
 - name: Install the ndb cluster management server
   yum:
-    name: ["{{ management_server_name }}"]
+    name: ["{{ management_server_name }}","{{ cluster_client_name }}"]
     state: present
   register: result
   retries: 7

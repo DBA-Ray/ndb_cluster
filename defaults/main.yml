@@ -10,6 +10,7 @@ remote_repo: https://dev.mysql.com/get/mysql80-community-release-el7-3.noarch.rp
 ndb_version: 8.0.21-1.el7.x86_64
 cluster_lib_compat_name: "mysql-cluster-community-libs-compat-{{ ndb_version }}"
 cluster_server_name: "mysql-cluster-community-server-{{ ndb_version }}"
+cluster_client_name: "mysql-cluster-community-client-{{ ndb_version }}"
 date_node_name: "mysql-cluster-community-data-node-{{ ndb_version }}"
 ndb_client_name: "mysql-cluster-community-ndbclient-{{ ndb_version }}"
 management_server_name: "mysql-cluster-community-management-server-{{ ndb_version }}"
