@@ -17,6 +17,7 @@ management_server_name: "mysql-cluster-community-management-server-{{ ndb_versio
 cluster_embedded_name: "mysql-cluster-community-embedded-compat-{{ ndb_version }}"
 cluster_memcached_name: "mysql-cluster-community-memcached-{{ ndb_version }}"
 # Directory path for slave
+fstab_src: /dev/vdb
 install_dir: /var/local
 basedir: "{{ install_dir }}/mysql"
 datadir: "{{ basedir }}/data"
