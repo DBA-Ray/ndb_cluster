@@ -18,7 +18,7 @@ Type=notify
 TimeoutSec=0
 
 # Start main service
-ExecStart=/usr/sbin/mysqld --defaults-file={{ sql_node_dir }}/my.cnf $MYSQLD_OPTS 
+ExecStart=/usr/bin/numactl --interleave=all /usr/sbin/mysqld --defaults-file={{ sql_node_dir }}/my.cnf $MYSQLD_OPTS 
 
 # Use this to switch malloc implementation
 EnvironmentFile=-/etc/sysconfig/mysql
