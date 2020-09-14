@@ -147,14 +147,16 @@
   when: inventory_hostname_short == "ansible"
 
 #######start cluster#######
+- name: Clean system's buffer and cache
+  shell: "sysctl -w vm.drop_caches=1"
 
 - name: Start management_node
-  shell: "ndb_mgmd --config-file={{ management_node_dir }}/config.ini --initial --ndb-nodeid=237 --config-dir={{ management_node_dir }}/"
+  shell: "/usr/bin/numactl --interleave=all ndb_mgmd --config-file={{ management_node_dir }}/config.ini --initial --ndb-nodeid=237 --config-dir={{ management_node_dir }}/"
   tags: startup
   when: inventory_hostname_short == "ansible"
 
 - name: Start data_node
-  shell: "ndbmtd --ndb-connectstring=ansible:1186"
+  shell: "/usr/bin/numactl --interleave=all ndbmtd --ndb-connectstring=ansible:1186"
   tags: startup
   when: inventory_hostname_short in groups.data_node
 
