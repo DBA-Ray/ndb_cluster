@@ -4,5 +4,6 @@
   remote_user: root
   vars:
     slave: True # Whether to initial slave
+    asynchronous_connection_failover: True # Whether to enable asynchronous connection failover
   roles:
     - dba_ray.ndb_cluster

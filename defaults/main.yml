@@ -7,7 +7,7 @@ whether_modify_parameters: True
 deploy_hosts: ansible:ndb
 # Ndb cluster version and basic rpm name
 remote_repo: https://dev.mysql.com/get/mysql80-community-release-el7-3.noarch.rpm
-ndb_version: 8.0.21-1.el7.x86_64
+ndb_version: 8.0.22-1.el7.x86_64
 cluster_lib_compat_name: "mysql-cluster-community-libs-compat-{{ ndb_version }}"
 cluster_server_name: "mysql-cluster-community-server-{{ ndb_version }}"
 cluster_client_name: "mysql-cluster-community-client-{{ ndb_version }}"
@@ -17,6 +17,7 @@ management_server_name: "mysql-cluster-community-management-server-{{ ndb_versio
 cluster_embedded_name: "mysql-cluster-community-embedded-compat-{{ ndb_version }}"
 cluster_memcached_name: "mysql-cluster-community-memcached-{{ ndb_version }}"
 # Directory path for slave
+whether_remount_data_disk: false
 fstab_src: /dev/vdb
 install_dir: /var/local
 basedir: "{{ install_dir }}/mysql"

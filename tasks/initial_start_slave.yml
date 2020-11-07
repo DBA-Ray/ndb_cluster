@@ -32,6 +32,7 @@
   with_items:
     - { src: 'my.cnf_auto.sh.j2', dest: "{{ basedir }}/my.cnf_auto.sh" }
     - { src: 'see_log.sh.j2', dest: "{{ shelldir }}/see_log.sh" }
+    - { src: 'asynchronous_connection_failover.sh.j2', dest: "{{ shelldir }}/asynchronous_connection_failover.sh" }
 
 - name: Auto config my.cnf
   shell: "sh -x {{ basedir }}/my.cnf_auto.sh"
@@ -92,20 +93,6 @@
     login_unix_socket: /var/lib/mysql/mysql.sock
     state: present
 
-- name: Add pmm user
-  mysql_user:
-    login_user: root
-    login_password: "{{ root_password }}"
-    name: pmm
-    password: "{{ pmm_password }}"
-    update_password: always
-    login_port: "{{ local_mysql_port }}"
-    host: 127.0.0.1
-    priv: '*.*:SELECT,RELOAD,PROCESS,SUPER,REPLICATION CLIENT/PERFORMANCE_SCHEMA.*:SELECT,UPDATE,DELETE,DROP'
-    sql_log_bin: no
-    login_unix_socket: /var/lib/mysql/mysql.sock
-    state: present
-
 - name: Config replication for ndb
   mysql_replication:
     login_port: "{{ local_mysql_port }}"
@@ -120,6 +107,10 @@
     master_auto_position: no
     master_log_file: mysql-bin.000001
     master_log_pos: 152
+  when: not asynchronous_connection_failover | default (True)
+
+- name: Config asynchronous_connection_failover
+  shell: "sh -x {{ shelldir }}/asynchronous_connection_failover.sh '{{ root_password }}' '{{ mysql_monitor_password }}'"
 
 - name: Start slave status for slaves
   mysql_replication:
