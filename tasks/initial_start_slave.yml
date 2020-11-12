@@ -43,6 +43,10 @@
     state: absent
     remote_src: yes
 
+- name: Obtain user_whitelist
+  shell: "cat /tmp/user_whitelist.txt"
+  register: user_whitelist
+
 - name: Install the ndb cluster repo
   yum:
     name: "{{ remote_repo }}"
@@ -87,15 +91,84 @@
     name: root
     password: "{{ root_password }}"
     update_password: always
-    login_port: "{{ local_mysql_port }}"
+    login_port: "{{ mysql_port }}"
     priv: '*.*:ALL,GRANT'
+    login_unix_socket: /var/lib/mysql/mysql.sock
+    state: present
+
+- name: Add remote root user
+  mysql_user:
+    login_user: root
+    login_password: "{{ root_password }}"
+    name: root
+    password: "{{ root_password }}"
+    update_password: always
+    login_port: "{{ mysql_port }}"
+    host: "{{ user_whitelist.stdout }}"
+    priv: '*.*:ALL,GRANT'
+    sql_log_bin: no
+    login_unix_socket: /var/lib/mysql/mysql.sock
+    state: present
+
+- name: Add repl user
+  mysql_user:
+    login_user: root
+    login_password: "{{ root_password }}"
+    name: repl
+    password: "{{ mysql_monitor_password }}"
+    update_password: always
+    login_port: "{{ mysql_port }}"
+    host: "{{ user_whitelist.stdout }}"
+    priv: '*.*:REPLICATION SLAVE,SUPER,REPLICATION CLIENT,SELECT'
+    sql_log_bin: no
+    login_unix_socket: /var/lib/mysql/mysql.sock
+    state: present
+
+- name: Add pmm user
+  mysql_user:
+    login_user: root
+    login_password: "{{ root_password }}"
+    name: pmm
+    password: "{{ pmm_password }}"
+    update_password: always
+    login_port: "{{ mysql_port }}"
+    host: 127.0.0.1
+    priv: '*.*:SELECT,RELOAD,PROCESS,SUPER,REPLICATION CLIENT/PERFORMANCE_SCHEMA.*:SELECT,UPDATE,DELETE,DROP'
+    sql_log_bin: no
+    login_unix_socket: /var/lib/mysql/mysql.sock
+    state: present
+
+- name: Add audit user
+  mysql_user:
+    login_user: root
+    login_password: "{{ root_password }}"
+    name: repl
+    password: "{{ mysql_monitor_password }}"
+    update_password: always
+    login_port: "{{ mysql_port }}"
+    host: "{{ user_whitelist.stdout }}"
+    priv: '*.*:REPLICATION SLAVE,SUPER,REPLICATION CLIENT'
+    sql_log_bin: no
+    login_unix_socket: /var/lib/mysql/mysql.sock
+    state: present
+
+- name: Add business user
+  mysql_user:
+    login_user: root
+    login_password: "{{ root_password }}"
+    name: "{{ business_user }}"
+    password: "{{ business_password }}"
+    update_password: always
+    login_port: "{{ mysql_port }}"
+    host: "{{ user_whitelist.stdout }}"
+    priv: "{{ business_user }}.*:SELECT,UPDATE,DELETE,INSERT"
     sql_log_bin: no
     login_unix_socket: /var/lib/mysql/mysql.sock
     state: present
 
 - name: Config replication for ndb
   mysql_replication:
-    login_port: "{{ local_mysql_port }}"
+    login_port: "{{ mysql_port }}"
     login_user: root
     login_password: "{{ root_password }}"
     login_unix_socket: /var/lib/mysql/mysql.sock
@@ -109,12 +182,12 @@
     master_log_pos: 152
   when: not asynchronous_connection_failover | default (True)
 
-- name: Config asynchronous_connection_failover
-  shell: "sh -x {{ shelldir }}/asynchronous_connection_failover.sh '{{ root_password }}' '{{ mysql_monitor_password }}'"
+#- name: Config asynchronous_connection_failover
+#  shell: "sh -x {{ shelldir }}/asynchronous_connection_failover.sh '{{ root_password }}' '{{ mysql_monitor_password }}'"
 
 - name: Start slave status for slaves
   mysql_replication:
-    login_port: "{{ local_mysql_port }}"
+    login_port: "{{ mysql_port }}"
     login_user: root
     login_password: "{{ root_password }}"
     login_unix_socket: /var/lib/mysql/mysql.sock

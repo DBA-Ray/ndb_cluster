@@ -161,9 +161,9 @@
   when: inventory_hostname_short in groups.data_node
 
 - name: Wait data nodes started
-  shell: "grep finished {{ data_node_dir }}/ndb_1_out.log | tail -1 | awk '{print $16}'"
+  shell: "grep finished {{ data_node_dir }}/ndb_1_out.log | tail -1 | awk '{print $15,$16}'"
   register: started
-  until: started.stdout.startswith("finished")
+  until: started.stdout.startswith("restart finished")
   retries: 10
   delay: 30
   when: inventory_hostname_short == "ndb1"
@@ -183,9 +183,8 @@
     name: root
     password: "{{ root_password }}"
     update_password: always
-    login_port: "{{ local_mysql_port }}"
+    login_port: "{{ mysql_port }}"
     priv: '*.*:ALL,GRANT'
-    sql_log_bin: no
     login_unix_socket: /var/lib/mysql/mysql.sock
     state: present
   when: inventory_hostname_short in groups.sql_node
@@ -197,10 +196,10 @@
     name: root
     password: "{{ root_password }}"
     update_password: always
-    login_port: "{{ local_mysql_port }}"
+    login_port: "{{ mysql_port }}"
     host: "{{ user_whitelist.stdout }}"
     priv: '*.*:ALL,GRANT'
-    sql_log_bin: yes
+    sql_log_bin: no
     login_unix_socket: /var/lib/mysql/mysql.sock
     state: present
   when: inventory_hostname_short in groups.sql_node
@@ -212,10 +211,10 @@
     name: repl
     password: "{{ mysql_monitor_password }}"
     update_password: always
-    login_port: "{{ local_mysql_port }}"
+    login_port: "{{ mysql_port }}"
     host: "{{ user_whitelist.stdout }}"
     priv: '*.*:REPLICATION SLAVE,SUPER,REPLICATION CLIENT,SELECT'
-    sql_log_bin: yes
+    sql_log_bin: no
     login_unix_socket: /var/lib/mysql/mysql.sock
     state: present
   when: inventory_hostname_short in groups.sql_node
@@ -227,10 +226,10 @@
     name: pmm
     password: "{{ pmm_password }}"
     update_password: always
-    login_port: "{{ local_mysql_port }}"
+    login_port: "{{ mysql_port }}"
     host: 127.0.0.1
     priv: '*.*:SELECT,RELOAD,PROCESS,SUPER,REPLICATION CLIENT/PERFORMANCE_SCHEMA.*:SELECT,UPDATE,DELETE,DROP'
-    sql_log_bin: yes
+    sql_log_bin: no
     login_unix_socket: /var/lib/mysql/mysql.sock
     state: present
   when: inventory_hostname_short in groups.sql_node
@@ -242,25 +241,25 @@
     name: repl
     password: "{{ mysql_monitor_password }}"
     update_password: always
-    login_port: "{{ local_mysql_port }}"
+    login_port: "{{ mysql_port }}"
     host: "{{ user_whitelist.stdout }}"
     priv: '*.*:REPLICATION SLAVE,SUPER,REPLICATION CLIENT'
-    sql_log_bin: yes
+    sql_log_bin: no
     login_unix_socket: /var/lib/mysql/mysql.sock
     state: present
   when: inventory_hostname_short in groups.sql_node
 
-  - name: Add business user
+- name: Add business user
   mysql_user:
     login_user: root
     login_password: "{{ root_password }}"
     name: "{{ business_user }}"
     password: "{{ business_password }}"
     update_password: always
-    login_port: "{{ local_mysql_port }}"
+    login_port: "{{ mysql_port }}"
     host: "{{ user_whitelist.stdout }}"
     priv: "{{ business_user }}.*:SELECT,UPDATE,DELETE,INSERT"
-    sql_log_bin: yes
+    sql_log_bin: no
     login_unix_socket: /var/lib/mysql/mysql.sock
     state: present
   when: inventory_hostname_short in groups.sql_node
@@ -279,8 +278,9 @@
   tags: shutdown
   when: inventory_hostname_short == "ansible"
 
-- name: Replace InitFragmentLogFiles=FULL
-  lineinfile:
-    dest: "{{ management_node_dir }}/config.ini"
-    regexp: "^InitFragmentLogFiles="
-    line: "InitFragmentLogFiles=FULL"
+#- name: Replace InitFragmentLogFiles=FULL
+#  lineinfile:
+#    dest: "{{ management_node_dir }}/config.ini"
+#    regexp: "^InitFragmentLogFiles="
+#    line: "InitFragmentLogFiles=FULL"
+#  when: inventory_hostname_short == "ansible"

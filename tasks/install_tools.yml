@@ -16,10 +16,7 @@
 
 - name: Install the percona tools for pmm2-client
   yum:
-    name: "{{ tools }}"
-  vars:
-    tools:
-    - pmm2-client.x86_64
+    name: pmm2-client.x86_64
     state: latest
   register: result
   retries: 7
@@ -27,9 +24,9 @@
 
 - name: Install the percona tools for mysql
   yum:
-    name: "{{ tools }}"
+    name: "{{ percona_tools }}"
   vars:
-    tools:
+    percona_tools:
     - percona-toolkit.x86_64
     - percona-xtrabackup-80.x86_64
     state: latest

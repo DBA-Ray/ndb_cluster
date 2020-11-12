@@ -26,11 +26,11 @@ innodb_write_io_threads=`expr $processor - $innodb_read_io_threads`
 
 #by innodb_dedicated_server
 
-#mem=`free -mh|egrep Mem|awk '{print $2}'|awk '{sub(/.$/,"")}1'|awk '{print int($1+0.5)}'`
+mem=`free -mh|egrep Mem|awk '{print $2}'|awk '{sub(/.$/,"")}1'|awk '{print int($1+0.5)}'`
 
-#mem={{ ansible_memtotal_mb }}
+mem={{ ansible_memtotal_mb }}
 
-#innodb_buffer_pool=`expr $mem \* $a / $b / $k`
+innodb_buffer_pool=`expr $mem \* $a / $b / $k`
 
 #自动赋值server_id,取IP最后一位
 
@@ -48,12 +48,6 @@ whitelist=`echo "$d.$e.$g.0/$f"`
 
 user_whitelist=`echo "$d.$e.$g.%"`
 
-#incre_offset_tmp={{ inventory_hostname_short }}
-
-#incre_offset=`echo ${incre_offset_tmp: -1}`
-
-#auto_increment=`cat /etc/hosts | grep proxysql | awk 'END{print NR}'`
-
 sed -i 's/server_id = 1/server_id = '"${server_id}"'/' {{ basedir }}/my.cnf
 
 sed -i 's/innodb_thread_concurrency = 10/innodb_thread_concurrency = '"${innodb_thread_concurrency}"'/g' {{ basedir }}/my.cnf
@@ -64,6 +58,6 @@ sed -i 's/innodb_write_io_threads = 4/innodb_write_io_threads = '"${innodb_write
 
 #by innodb_dedicated_server
 
-#sed -i 's/innodb_buffer_pool_size = 25G/innodb_buffer_pool_size = '"${innodb_buffer_pool}"'G/g' {{ basedir }}/my.cnf
+sed -i 's/innodb_buffer_pool_size = 25G/innodb_buffer_pool_size = '"${innodb_buffer_pool}"'G/g' {{ basedir }}/my.cnf
 
 echo $user_whitelist > /tmp/user_whitelist.txt

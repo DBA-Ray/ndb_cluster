@@ -1,5 +1,5 @@
 ---
-- hosts: sql_node:data_node:ansible
+- hosts: sql_node:data_node:ansible:slave
   gather_facts: True
   remote_user: root
   tasks:
@@ -15,6 +15,7 @@
         - "{{ groups.sql_node }}"
         - "{{ groups.data_node }}"
         - "ansible"
+        - "{{ groups.slave }}"
 
     - name: Config hostname
       hostname:

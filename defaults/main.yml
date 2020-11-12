@@ -31,8 +31,7 @@ data_node_dir: "{{ install_dir }}/data_mcc"
 management_node_dir: "{{ install_dir }}/managment_mcc"
 # Basic parameters
 web_port: 8080
-# my.cnf info
-local_mysql_port: 3306
-# Master info
 mysql_port: 3377
-master_host: 172.17.16.7
+master_host: sql100
+#User info
+business_user: ttjb
