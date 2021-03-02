@@ -1,5 +1,6 @@
 ---
 # defaults file for dba_ray.ndb_cluster
+# The suffix of the host name must be three digits!!!
 # Whether to uninstall the original service and then install it
 whether_uninstall: False
 whether_modify_parameters: True

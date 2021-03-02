@@ -19,6 +19,7 @@
     - "{{ shelldir }}"
     - "{{ monitordir }}"
     - "{{ sql_node_dir }}"
+    - "{{ sql_node_data_dir }}"
   when: inventory_hostname_short in groups.sql_node
 
 - name: Rendering mysql parameter file
