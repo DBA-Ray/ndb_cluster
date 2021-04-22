@@ -1,4 +1,28 @@
 #initial for ndb cluster via commands
+- name: Install base packages
+  yum:
+    name: "{{ packages }}"
+    state: latest
+
+#- name: Uninstall mysql
+#  yum:
+#    name: mysql-cluster*
+#    state: absent
+#  when: whether_uninstall
+
+- name: Remove existing mcc directory
+  file:
+    path: "{{ item }}"
+    state: absent
+    remote_src: 'True'
+  with_items:
+    - "{{ sql_node_dir }}"
+    - "{{ data_node_dir }}"
+    - "{{ management_node_dir }}"
+  when: whether_uninstall
+
+- name: Cleaning up unfinished transaction
+  shell: "yum-complete-transaction --cleanup-only;yum history redo last"
 
 - name: Install the ndb cluster repo
   yum:
@@ -10,6 +34,16 @@
 
 - name: Copy the mysql-community.repo
   copy: src=mysql-community.repo dest=/etc/yum.repos.d/mysql-community.repo
+
+- name: Ensure group "mysql" exists
+  group:
+    name: mysql
+    state: present
+
+- name: Ensure the user "mysql" exists
+  user:
+    name: mysql
+    group: mysql
 
 #######sql_node#######
 
@@ -70,7 +104,7 @@
 - name: Install the ndb cluster sql server
   yum:
     name: ["{{ cluster_server_name }}", "{{ cluster_lib_compat_name }}", "mysql-shell"]
-    state: present
+    state: latest
   register: result
   retries: 7
   until: result is succeeded
@@ -100,8 +134,8 @@
 
 - name: Install the ndb cluster data server
   yum:
-    name: ["{{ date_node_name }}", "{{ ndb_client_name }}", "{{ cluster_embedded_name }}", "{{ cluster_memcached_name }}"]
-    state: present
+    name: ["{{ date_node_name }}", "{{ ndb_client_name }}"]
+    state: latest
   register: result
   retries: 7
   until: result is succeeded
@@ -113,7 +147,7 @@
   file: path={{ item }} state=directory owner=mysql group=mysql
   with_items:
     - "{{ management_node_dir }}"
-  when: inventory_hostname_short == "ansible"
+  when: inventory_hostname_short in groups.slave
 
 - name: Rendering management_node parameter file
   template:
@@ -125,27 +159,27 @@
   with_items:
     - { src: 'config.ini.j2', dest: "{{ management_node_dir }}/config.ini" }
     - { src: 'config_auto.sh.j2', dest: "{{ management_node_dir }}/config_auto.sh" }
-  when: inventory_hostname_short == "ansible"
+  when: inventory_hostname_short in groups.slave
 
 - name: Auto config config.ini
   shell: "sh -x {{ management_node_dir }}/config_auto.sh"
-  when: inventory_hostname_short == "ansible"
+  when: inventory_hostname_short in groups.slave
 
 - name: Remove config_auto.sh
   file:
     path: "{{ management_node_dir }}/config_auto.sh"
     state: absent
     remote_src: yes
-  when: inventory_hostname_short == "ansible"
+  when: inventory_hostname_short in groups.slave
 
 - name: Install the ndb cluster management server
   yum:
     name: ["{{ management_server_name }}","{{ cluster_client_name }}"]
-    state: present
+    state: latest
   register: result
   retries: 7
   until: result is succeeded
-  when: inventory_hostname_short == "ansible"
+  when: inventory_hostname_short in groups.slave
 
 #######start cluster#######
 - name: Clean system's buffer and cache
@@ -154,18 +188,18 @@
 - name: Start management_node
   shell: "/usr/bin/numactl --interleave=all ndb_mgmd --config-file={{ management_node_dir }}/config.ini --initial --ndb-nodeid=237 --config-dir={{ management_node_dir }}/"
   tags: startup
-  when: inventory_hostname_short == "ansible"
+  when: inventory_hostname_short in groups.slave
 
 - name: Start data_node
-  shell: "/usr/bin/numactl --interleave=all ndbmtd --ndb-connectstring=ansible:1186"
+  shell: "/usr/bin/numactl --interleave=all ndbmtd --ndb-connectstring={{ hostvars[groups['slave'][0]]['inventory_hostname_short'] }}:1186"
   tags: startup
   when: inventory_hostname_short in groups.data_node
 
 - name: Wait data nodes started
-  shell: "grep finished {{ data_node_dir }}/ndb_1_out.log | tail -1 | awk '{print $15,$16}'"
+  shell: "tail -1 {{ data_node_dir }}/ndb_1_out.log | grep 'Node started' | awk '{print $6,$7}'"
   register: started
-  until: started.stdout.startswith("restart finished")
-  retries: 10
+  until: started.stdout.startswith("Node started")
+  retries: 15
   delay: 30
   when: inventory_hostname_short == "ndb1"
   tags: startup
@@ -277,11 +311,11 @@
 - name: Stop management_node
   shell: "ndb_mgm localhost 1186 --execute=shutdown --connect-retries=2"
   tags: shutdown
-  when: inventory_hostname_short == "ansible"
+  when: inventory_hostname_short in groups.slave
 
 #- name: Replace InitFragmentLogFiles=FULL
 #  lineinfile:
 #    dest: "{{ management_node_dir }}/config.ini"
 #    regexp: "^InitFragmentLogFiles="
 #    line: "InitFragmentLogFiles=FULL"
-#  when: inventory_hostname_short == "ansible"
+#  when: inventory_hostname_short in groups.slave

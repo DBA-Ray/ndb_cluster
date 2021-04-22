@@ -38,18 +38,18 @@
   yum:
     name: "mysql-cluster-community-auto-installer-{{ ndb_version }}"
     state: present
-  when: inventory_hostname_short == "ansible"
+  when: inventory_hostname_short == "slave101"
 
 - name: Install the required software on set-up host
   pip:
     name: [cryptography, paramiko]
-  when: inventory_hostname_short == "ansible"
+  when: inventory_hostname_short == "slave101"
 
 - name: Remove /root/.mcc/mcc.pid
   file:
     path: /root/.mcc/mcc.pid
     state: absent
-  when: whether_uninstall and (inventory_hostname_short == "ansible")
+  when: whether_uninstall and (inventory_hostname_short == "slave101")
 
 - name: Backp orignal deploy.js and parameters.js
   copy:
@@ -63,16 +63,16 @@
   with_items:
     - /usr/share/mysql-8.0/mcc/frontend/js/mcc/configuration/deploy.js
     - /usr/share/mysql-8.0/mcc/frontend/js/mcc/configuration/parameters.js
-  when: inventory_hostname_short == "ansible" and whether_modify_parameters
+  when: inventory_hostname_short == "slave101" and whether_modify_parameters
 
 - name: Add the flag of ray mysql parameters
   shell: "sed -i '2199i\ // THE FLAG OF RAY' /usr/share/mysql-8.0/mcc/frontend/js/mcc/configuration/deploy.js"
-  when: inventory_hostname_short == "ansible" and whether_modify_parameters
+  when: inventory_hostname_short == "slave101" and whether_modify_parameters
 
 - name: Add mysql parameters for deploy.js
   blockinfile:
     path: /usr/share/mysql-8.0/mcc/frontend/js/mcc/configuration/deploy.js
-    marker: "        /* {mark} ANSIBLE MANAGED BLOCK */"
+    marker: "        /* {mark} slave101 MANAGED BLOCK */"
     insertafter: "// THE FLAG OF RAY"
     block: |
       /***DBA RAY***/
@@ -110,7 +110,7 @@
               addln(configFile, 'skip_name_resolve');
               addln(configFile, 'wait_timeout = 3600');
               addln(configFile, 'interactive_timeout = 3600');
-  when: inventory_hostname_short == "ansible" and whether_modify_parameters
+  when: inventory_hostname_short == "slave101" and whether_modify_parameters
 
 - name: Rendering parameters.js file
   template:
@@ -121,8 +121,8 @@
     mode: 0644
   with_items:
     - { src: 'parameters.js.j2', dest: '/usr/share/mysql-8.0/mcc/frontend/js/mcc/configuration/parameters.js' }
-  when: inventory_hostname_short == "ansible" and whether_modify_parameters
+  when: inventory_hostname_short == "slave101" and whether_modify_parameters
 
 - name: Start the web server for auto installer
   shell: "echo '/usr/bin/ndb_setup.py -p {{ web_port }} -N 0.0.0.0\n{{ basedir }}' > /tmp/ndb_auto.txt"
-  when: inventory_hostname_short == "ansible"
+  when: inventory_hostname_short == "slave101"

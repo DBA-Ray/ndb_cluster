@@ -30,7 +30,7 @@ sed -i '$a\[NDBD]\nNodeId='"${ndb_NodeId}"'\nHostName='"${i}"'\nDataDir={{ data_
 
 done
 
-sql_HostName=`grep -i mcc_sql /etc/hosts|awk '{print $2}'`
+sql_HostName=`grep -i mysql /etc/hosts|awk '{print $2}'`
 
 for i in $sql_HostName
 

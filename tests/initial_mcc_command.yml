@@ -1,8 +1,11 @@
 ---
-- hosts: ansible:sql_node:data_node
+- hosts: slave101:sql_node:data_node
   gather_facts: True
   remote_user: root
   vars:
     mcc_command: True # Whether to install mysql cluster via commands
+    whether_uninstall: True # Whether to uninstall the original service and then install it
+    #The hostnames of data node must contain the "ndb" keyword,the hostnames of sql nodes must contain the "mysql" keyword.
+    #The suffix of the mysql host name must be three digits!!!
   roles:
     - dba_ray.ndb_cluster

@@ -5,7 +5,7 @@ Portnumber=1186
 
 [NDB_MGMD]
 NodeId=237
-HostName=ansible
+HostName={{ hostvars[groups['slave'][0]]['inventory_hostname_short'] }}
 DataDir={{ management_node_dir }}
 Portnumber=1186
 
