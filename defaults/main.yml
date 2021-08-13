@@ -5,7 +5,7 @@ whether_modify_parameters: True
 deploy_hosts: slave101:sql_node:data_node
 # Ndb cluster version and basic rpm name
 remote_repo: https://dev.mysql.com/get/mysql80-community-release-el7-3.noarch.rpm
-ndb_version: 8.0.24-1.el7.x86_64
+ndb_version: 8.0.26-1.el7.x86_64
 cluster_lib_compat_name: "mysql-cluster-community-libs-compat.x86_64"
 cluster_server_name: "mysql-cluster-community-server.x86_64"
 cluster_client_name: "mysql-cluster-community-client.x86_64"
@@ -29,5 +29,12 @@ management_node_dir: "{{ install_dir }}/managment_mcc"
 web_port: 8080
 mysql_port: 3377
 master_host: mysql101
+max_connections: 2000
+innodb_io_capacity: 10000
+timeout: 28800
+tmp_size: 1073741824
+log_queries_not_using_indexes: 0
+min_examined_row_limit: 0
+sql_mode: ''
 #User info
 business_user: ttjb

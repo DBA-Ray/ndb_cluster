@@ -19,8 +19,7 @@
   log_bin_index = mysql-bin.index
   server_id = 1
   binlog_format = row
-  binlog_row_image = minimal
-  binlog_expire_logs_seconds = 259200
+  binlog_expire_logs_seconds = 604800
   binlog_transaction_dependency_tracking = WRITESET
   binlog_order_commits = 0
   binlog_checksum = CRC32
@@ -31,7 +30,7 @@
   binlog_rows_query_log_events = 1
 
 # per_thread_buffers
-  join_buffer_size = 8M #处理逻辑是驱动表的一行和非驱动表联合查找，这时就可以将非驱动表放入join_buffer，不需要访问拥有并发保护机制的buffer_pool
+  join_buffer_size = 2M #处理逻辑是驱动表的一行和非驱动表联合查找，这时就可以将非驱动表放入join_buffer，不需要访问拥有并发保护机制的buffer_pool
   sort_buffer_size = 2M #执行order by和group by分配，用于存储排序的中间结果，当分配空间大于2M时会使用mmap而不是malloc来进行内存分配，导致效率降低
   read_rnd_buffer_size = 32M #当thread进行随机扫描数据时会首先扫描该buffer空间以避免更多的物理读，放大以使用MRR
   read_buffer_size = 2M #当thread进行顺序扫描数据时会首先扫描该buffer空间以避免更多的物理读
@@ -54,7 +53,6 @@
   collation_server = utf8mb4_0900_ai_ci
   auto_increment_offset = 1
   auto_increment_increment = 1
-  sql_mode={{ sql_mode }}
 
 # 日志时间戳改为系统
   log_timestamps = system
@@ -64,11 +62,11 @@
 #  enforce_gtid_consistency = true
   master_info_repository = TABLE
   relay_log_info_repository = TABLE
-  replica_parallel_type = logical_clock
-  replica_parallel_workers = 16
-  replica_preserve_commit_order = on
+  slave_parallel_type = logical_clock
+  slave_parallel_workers = 16
+  slave_preserve_commit_order = on
   slave_allow_batching=1
-  log_replica_updates = 1
+  log_slave_updates = 1
   relay_log = relay
   relay_log_index = relay.index
 
@@ -81,16 +79,16 @@
   log_slow_admin_statements = 1
 
 # 连接数优化
-  max_connections = {{ max_connections }}
-  max_connect_errors = {{ max_connections * 10 }}
-  max_allowed_packet = 1072693248 #必须小于slave_max_allowed_packet的默认值1073741824（1G）
+  max_connections = 2000
+  max_connect_errors = 100000
+  max_allowed_packet = 1073741824 #（1G）
 
 # thread optimization
-  thread_cache_size = {{ max_connections // 100 + 8 }} #default value: 8 + (max_connections / 100) maxvalue: 100
+  thread_cache_size = 400 #default value: 8 + (max_connections / 100) maxvalue: 100
 
-# table缓存优化（最大并发数 * join语句涉及的表的最大个数）
-  table_open_cache = {{ max_connections * 3 }}
-  #table_definition_cache = 20000 #MIN（400 + table_open_cache / 2, 2000）
+# table缓存优化（建议10倍于max_connections）
+  table_open_cache = 20000
+  table_definition_cache = 20000
 
 # 避免MySQL的外部锁定，减少出错几率增强稳定性。
   skip_external_locking
@@ -107,8 +105,8 @@
   local_infile = 1 #使用loadDump函数必备
 
 # 超时时间
-  wait_timeout = {{ timeout }}
-  interactive_timeout = {{ timeout }}
+  wait_timeout = 3600
+  interactive_timeout = 3600
 
 [mysql]
 
