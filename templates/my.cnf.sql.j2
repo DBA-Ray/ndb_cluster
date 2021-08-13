@@ -31,7 +31,7 @@
   binlog_rows_query_log_events = 1
 
 # per_thread_buffers
-  join_buffer_size = 8M #处理逻辑是驱动表的一行和非驱动表联合查找，这时就可以将非驱动表放入join_buffer，不需要访问拥有并发保护机制的buffer_pool
+  join_buffer_size = 32M #处理逻辑是驱动表的一行和非驱动表联合查找，这时就可以将非驱动表放入join_buffer，不需要访问拥有并发保护机制的buffer_pool
   sort_buffer_size = 2M #执行order by和group by分配，用于存储排序的中间结果，当分配空间大于2M时会使用mmap而不是malloc来进行内存分配，导致效率降低
   read_rnd_buffer_size = 32M #当thread进行随机扫描数据时会首先扫描该buffer空间以避免更多的物理读，放大以使用MRR
   read_buffer_size = 2M #当thread进行顺序扫描数据时会首先扫描该buffer空间以避免更多的物理读
