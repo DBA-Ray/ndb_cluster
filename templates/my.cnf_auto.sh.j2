@@ -1,40 +1,10 @@
 #!/bin/bash
 
-#自动根据cpu逻辑核心数计算出innodb并发线程数、读线程数和写线程数
-
-#基准运算常量
-
-a=7
-
-b=10
-
-c=2
-
-k=1024
-
-#processor=`cat /proc/cpuinfo |grep "processor"|wc -l`
-
-processor={{ ansible_processor_vcpus }}
-
-innodb_thread_concurrency=`expr $processor \* $c`
-
-innodb_read_io_threads=`expr $processor \* $a / $b`
-
-innodb_write_io_threads=`expr $processor - $innodb_read_io_threads`
-
-#自动根据memory计算出innodb缓冲池大小
-
-#by innodb_dedicated_server
-
-mem=`free -mh|egrep Mem|awk '{print $2}'|awk '{sub(/.$/,"")}1'|awk '{print int($1+0.5)}'`
-
-mem={{ ansible_memtotal_mb }}
-
-innodb_buffer_pool=`expr $mem \* $a / $b / $k`
-
 #自动赋值server_id,取IP最后一位
 
 server_id=`echo {{ ansible_default_ipv4['address'] }} | awk -F'.' '{print $4}'`
+
+sed -i 's/server_id = 1/server_id = '"${server_id}"'/' {{ basedir }}/my.cnf
 
 d=`echo {{ ansible_default_ipv4['address'] }} | awk -F'.' '{print $1}'`
 
@@ -47,17 +17,5 @@ f=`ip a|grep {{ ansible_default_ipv4['address'] }}|awk '{print $2}'|tr -d "addr:
 whitelist=`echo "$d.$e.$g.0/$f"`
 
 user_whitelist=`echo "$d.$e.$g.%"`
-
-sed -i 's/server_id = 1/server_id = '"${server_id}"'/' {{ basedir }}/my.cnf
-
-sed -i 's/innodb_thread_concurrency = 10/innodb_thread_concurrency = '"${innodb_thread_concurrency}"'/g' {{ basedir }}/my.cnf
-
-sed -i 's/innodb_read_io_threads = 4/innodb_read_io_threads = '"${innodb_read_io_threads}"'/g' {{ basedir }}/my.cnf
-
-sed -i 's/innodb_write_io_threads = 4/innodb_write_io_threads = '"${innodb_write_io_threads}"'/g' {{ basedir }}/my.cnf
-
-#by innodb_dedicated_server
-
-sed -i 's/innodb_buffer_pool_size = 25G/innodb_buffer_pool_size = '"${innodb_buffer_pool}"'G/g' {{ basedir }}/my.cnf
 
 echo $user_whitelist > /tmp/user_whitelist.txt

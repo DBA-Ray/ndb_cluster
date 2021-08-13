@@ -101,8 +101,8 @@
   innodb_flush_neighbors = 0
   innodb_use_native_aio = ON
   innodb_log_compressed_pages = OFF #固态硬盘可以关闭
-  innodb_read_io_threads = 4
-  innodb_write_io_threads = 4
+  innodb_read_io_threads = {{ ( ansible_processor_vcpus * 8 ) // 10 }}
+  innodb_write_io_threads = {{ ( ansible_processor_vcpus * 2 ) // 10 }}
   innodb_thread_concurrency = 0
   innodb_monitor_enable = all
 

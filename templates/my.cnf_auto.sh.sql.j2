@@ -4,6 +4,8 @@
 
 server_id=`echo {{ ansible_default_ipv4['address'] }} | awk -F'.' '{print $4}'`
 
+sed -i 's/server_id = 1/server_id = '"${server_id}"'/' {{ sql_node_dir }}/my.cnf
+
 d=`echo {{ ansible_default_ipv4['address'] }} | awk -F'.' '{print $1}'`
 
 e=`echo {{ ansible_default_ipv4['address'] }} | awk -F'.' '{print $2}'`
@@ -19,8 +21,6 @@ user_whitelist=`echo "$d.$e.$g.%"`
 incre_offset_tmp={{ inventory_hostname_short }}
 
 incre_offset=`echo ${incre_offset_tmp: -3}`
-
-sed -i 's/server_id = 1/server_id = '"${server_id}"'/' {{ sql_node_dir }}/my.cnf
 
 sed -i 's/ndb-nodeid = 200/ndb-nodeid = '"${incre_offset}"'/' {{ sql_node_dir }}/my.cnf
 
