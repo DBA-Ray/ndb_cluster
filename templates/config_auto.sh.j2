@@ -16,29 +16,29 @@ DataMemory=`expr $mem \* $a / $b`
 
 sed -i 's/DataMemory=1G/DataMemory='"${DataMemory}"'M/g' {{ management_node_dir }}/config.ini
 
-ndb_HostName=`grep -i ndb /etc/hosts|awk '{print $2}'`
+ndb_HostName=`grep -i mccndb /etc/hosts|grep {{ env }}|awk '{print $2}'`
 
-for i in $ndb_HostName
+for i in ${ndb_HostName}
 
-do 
+do
 
 ndb_NodeId=`echo ${i: -1}`
 
-echo $ndb_NodeId $i
+echo ${ndb_NodeId} ${i}
 
 sed -i '$a\[NDBD]\nNodeId='"${ndb_NodeId}"'\nHostName='"${i}"'\nDataDir={{ data_node_dir }}\nServerPort=11860\n' {{ management_node_dir }}/config.ini
 
 done
 
-sql_HostName=`grep -i mysql /etc/hosts|awk '{print $2}'`
+sql_HostName=`grep -i mccsql /etc/hosts|grep {{ env }}|awk '{print $2}'`
 
-for i in $sql_HostName
+for i in ${sql_HostName}
 
 do 
 
 sql_NodeId=`echo ${i: -3}`
 
-echo $sql_NodeId $i
+echo ${sql_NodeId} ${i}
 
 sed -i '$a\[MYSQLD]\nNodeId='"${sql_NodeId}"'\nHostName='"${i}"'\n' {{ management_node_dir }}/config.ini
 

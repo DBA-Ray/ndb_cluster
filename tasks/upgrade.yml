@@ -11,7 +11,7 @@
   with_items:
     - /usr/share/mysql-8.0/mcc/frontend/js/mcc/configuration/deploy.js
     - /usr/share/mysql-8.0/mcc/frontend/js/mcc/configuration/parameters.js
-  when: inventory_hostname_short == "ansible"
+  when: inventory_hostname_short in groups.mcc_slave_{{ env }}
 
 - name: Upgrade the mysql-cluster*
   yum:
@@ -33,4 +33,4 @@
   with_items:
     - "{{ shelldir }}/deploy.js"
     - "{{ shelldir }}/parameters.js"
-  when: inventory_hostname_short == "ansible"
+  when: inventory_hostname_short in groups.mcc_slave_{{ env }}

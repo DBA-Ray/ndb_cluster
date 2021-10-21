@@ -1,5 +1,5 @@
 ---
-- hosts: slave
+- hosts: "mcc_slave_{{ env }}"
   gather_facts: True
   remote_user: root
   vars:

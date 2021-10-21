@@ -1,5 +1,5 @@
 ---
-- hosts: slave101:sql_node:data_node
+- hosts: "{{ deploy_hosts }}"
   gather_facts: True
   remote_user: root
   vars:

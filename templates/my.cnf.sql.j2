@@ -3,7 +3,7 @@
 # ndb parameters
   ndbcluster = on
   ndb-nodeid = 200
-  ndb-connectstring = {{ hostvars[groups['slave'][0]]['inventory_hostname_short'] }}:1186
+  ndb-connectstring = {{ hostvars[groups[mcc_slave_{{ env }}][0]]['inventory_hostname_short'] }}:1186
   ndb_log_update_as_write = 0 #异步复制到其他存储引擎需设置0
   ndb_log_bin = 1
 # daemonize = ON
@@ -19,7 +19,7 @@
   log_bin_index = mysql-bin.index
   server_id = 1
   binlog_format = row
-  binlog_row_image = minimal
+ #binlog_row_image = minimal #影响写入速度
   binlog_expire_logs_seconds = 259200
   binlog_transaction_dependency_tracking = WRITESET
   binlog_order_commits = 0
@@ -77,26 +77,27 @@
   slow_query_log = 1
   slow_query_log_file = {{ sql_node_dir }}/slow.log
 
-# 记录管理语句
-  log_slow_admin_statements = 1
+# 是否记录管理语句
+  log_slow_admin_statements = 0
 
 # 连接数优化
   max_connections = {{ max_connections }}
-  max_connect_errors = {{ max_connections * 10 }}
+  max_connect_errors = {{ max_connections * 10 }} #允许同一主机连接请求失败最大值（超过之后mysql会阻止这台主机后续所有请求）
   max_allowed_packet = 1072693248 #必须小于slave_max_allowed_packet的默认值1073741824（1G）
 
 # thread optimization
-  thread_cache_size = {{ max_connections // 100 + 8 }} #default value: 8 + (max_connections / 100) maxvalue: 100
+  thread_cache_size = {{ max_connections // 100 + 8 }} #缓存线程数 default value: 8 + (max_connections / 100) maxvalue: 100
 
 # table缓存优化（最大并发数 * join语句涉及的表的最大个数）
-  table_open_cache = {{ max_connections * 3 }}
-  #table_definition_cache = 20000 #MIN（400 + table_open_cache / 2, 2000）
+  table_open_cache = {{ max_connections * 3 }}  #所有线程打开表数
+  #table_definition_cache = 20000 #MIN（400 + table_open_cache / 2, 2000） #定义在高速缓冲中存储的表定义数量
 
 # 避免MySQL的外部锁定，减少出错几率增强稳定性。
-  skip_external_locking
+  skip_external_locking = 1 
 
-# 死锁记录至error_log
-  innodb_print_all_deadlocks = 1
+# 是否开启死锁监测并记录至error_log
+  innodb_deadlock_detect = 0
+  innodb_print_all_deadlocks = 0
 
 # 关闭时间戳默认值
   explicit_defaults_for_timestamp = 1

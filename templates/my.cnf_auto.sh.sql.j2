@@ -18,10 +18,8 @@ whitelist=`echo "$d.$e.$g.0/$f"`
 
 user_whitelist=`echo "$d.$e.$g.%"`
 
-incre_offset_tmp={{ inventory_hostname_short }}
+ndb_nodeid=`echo {{ ansible_hostname }} | awk -F[_] '{print $1}' | awk '{print substr($1,7,3)}'`
 
-incre_offset=`echo ${incre_offset_tmp: -3}`
-
-sed -i 's/ndb-nodeid = 200/ndb-nodeid = '"${incre_offset}"'/' {{ sql_node_dir }}/my.cnf
+sed -i 's/ndb-nodeid = 200/ndb-nodeid = '"${ndb_nodeid}"'/' {{ sql_node_dir }}/my.cnf
 
 echo $user_whitelist > /tmp/user_whitelist.txt

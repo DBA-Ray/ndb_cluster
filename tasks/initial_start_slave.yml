@@ -18,7 +18,7 @@
     - { src: 'mysqld.service.j2', dest: '/usr/lib/systemd/system/mysqld.service' }
     - { src: 'my.cnf.j2', dest: "{{ basedir }}/my.cnf" }
 
-- name: Force systemd to reread configs
+- name: Force systemd to reload configs
   systemd:
     daemon_reload: yes
 
